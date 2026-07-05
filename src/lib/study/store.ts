@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import type {
   AppState,
+  CharacterCustomization,
   Confidence,
   ExamAttempt,
   QuestionProgress,
@@ -8,6 +9,7 @@ import type {
   Settings,
 } from "./types";
 import { emptyProgress, schedule } from "./srs";
+
 
 const KEY = "surgery1-mastery-v1";
 const VERSION = 1;
