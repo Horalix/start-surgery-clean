@@ -237,3 +237,8 @@ export function resetAllProgress() {
     profile: { ...defaultState().profile, name: s.profile.name, createdAt: s.profile.createdAt },
   }));
 }
+
+// ── Character customization ──────────────────────────────────────────────────
+export function setCharacter(character: CharacterCustomization) {
+  set((s) => ({ ...s, character }));
+}
