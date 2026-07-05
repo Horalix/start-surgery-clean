@@ -36,16 +36,32 @@ const PROPS: { key: "cap" | "mask" | "glasses" | "badge" | "loupe"; label: strin
   { key: "loupe", label: "Surgical loupe" },
 ];
 
+const ANGEL_EMAILS = ["kerim.sabic@gmail.com"];
+const ANGEL_NAMES = ["kerim"];
+const DEVIL_EMAILS = ["amrudin.naser@gmail.com"];
+const DEVIL_NAMES = ["amrudin"];
+
 function CharacterPage() {
   const xp = useStore((s) => s.profile.xp);
+  const profileName = useStore((s) => s.profile.name);
   const saved = useStore((s) => s.character);
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
 
   const [draft, setDraft] = useState<CharacterCustomization>(saved ?? {});
   const [savingCloud, setSavingCloud] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => setDraft(saved ?? {}), [saved]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+  }, []);
+
+  const nameLc = (profileName ?? "").trim().toLowerCase();
+  const emailLc = (email ?? "").trim().toLowerCase();
+  const canAngel = ANGEL_EMAILS.includes(emailLc) || ANGEL_NAMES.some((n) => nameLc.includes(n));
+  const canDevil = DEVIL_EMAILS.includes(emailLc) || DEVIL_NAMES.some((n) => nameLc.includes(n));
 
   const palette = { ...stage.palette, ...(draft.palette ?? {}) };
   const props = { ...stage.props, ...(draft.props ?? {}) };
@@ -54,6 +70,8 @@ function CharacterPage() {
     setDraft((d) => ({ ...d, palette: { ...(d.palette ?? {}), ...p } }));
   const toggleProp = (k: (typeof PROPS)[number]["key"]) =>
     setDraft((d) => ({ ...d, props: { ...(d.props ?? {}), [k]: !props[k] } }));
+  const setSpecial = (s: "angel" | "devil" | undefined) =>
+    setDraft((d) => ({ ...d, special: d.special === s ? undefined : s }));
 
   const save = async () => {
     setCharacter(draft);
@@ -195,6 +213,53 @@ function CharacterPage() {
               Some gear also unlocks automatically as you level up.
             </p>
           </div>
+
+          {(canAngel || canDevil) && (
+            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-transparent p-4">
+              <Label className="mb-2 block text-sm font-semibold">
+                ✨ Secret forms{" "}
+                <span className="ml-1 text-xs font-normal text-muted-foreground">
+                  (unlocked for you)
+                </span>
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {canAngel && (
+                  <button
+                    onClick={() => setSpecial("angel")}
+                    className={cn(
+                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
+                      draft.special === "angel"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-accent",
+                    )}
+                  >
+                    😇 Angel
+                  </button>
+                )}
+                {canDevil && (
+                  <button
+                    onClick={() => setSpecial("devil")}
+                    className={cn(
+                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
+                      draft.special === "devil"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-accent",
+                    )}
+                  >
+                    😈 Devil
+                  </button>
+                )}
+                {draft.special && (
+                  <button
+                    onClick={() => setSpecial(undefined)}
+                    className="rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>

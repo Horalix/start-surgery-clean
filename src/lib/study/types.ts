@@ -74,6 +74,8 @@ export interface Settings {
   examTimerMinutes: number;
 }
 
+export type SpecialCharacter = "angel" | "devil";
+
 export interface CharacterCustomization {
   palette?: Partial<{
     skin: string;
@@ -89,6 +91,7 @@ export interface CharacterCustomization {
     badge: boolean;
     loupe: boolean;
   }>;
+  special?: SpecialCharacter;
 }
 
 export interface AppState {
