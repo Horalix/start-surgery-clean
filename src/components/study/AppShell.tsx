@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   Home,
@@ -16,11 +16,14 @@ import {
   Menu,
   X,
   Flame,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore, toggleTheme } from "@/lib/study/store";
 import { levelProgress, stageForLevel } from "@/lib/study/companion";
 import { Companion } from "./Companion";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem {
   to: string;
