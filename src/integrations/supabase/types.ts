@@ -14,7 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      battle_answers: {
+        Row: {
+          answered_at: string
+          correct: boolean
+          id: string
+          ms: number
+          qid: string
+          room_id: string
+          selected: string[]
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          correct: boolean
+          id?: string
+          ms: number
+          qid: string
+          room_id: string
+          selected: string[]
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          correct?: boolean
+          id?: string
+          ms?: number
+          qid?: string
+          room_id?: string
+          selected?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_answers_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "battle_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battle_players: {
+        Row: {
+          correct_count: number
+          display_name: string
+          joined_at: string
+          room_id: string
+          score: number
+          total_ms: number
+          user_id: string
+        }
+        Insert: {
+          correct_count?: number
+          display_name: string
+          joined_at?: string
+          room_id: string
+          score?: number
+          total_ms?: number
+          user_id: string
+        }
+        Update: {
+          correct_count?: number
+          display_name?: string
+          joined_at?: string
+          room_id?: string
+          score?: number
+          total_ms?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "battle_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battle_rooms: {
+        Row: {
+          code: string
+          created_at: string
+          ended_at: string | null
+          host_user_id: string
+          id: string
+          mode: string
+          question_ids: string[]
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          ended_at?: string | null
+          host_user_id: string
+          id?: string
+          mode: string
+          question_ids: string[]
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          ended_at?: string | null
+          host_user_id?: string
+          id?: string
+          mode?: string
+          question_ids?: string[]
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
