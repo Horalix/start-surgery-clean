@@ -167,6 +167,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          best_exam_score: number
           character: Json
           created_at: string
           display_name: string
@@ -174,6 +175,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          best_exam_score?: number
           character?: Json
           created_at?: string
           display_name?: string
@@ -181,6 +183,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          best_exam_score?: number
           character?: Json
           created_at?: string
           display_name?: string
