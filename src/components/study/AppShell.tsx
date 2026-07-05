@@ -265,6 +265,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 function CompanionFooter() {
   const xp = useStore((s) => s.profile.xp);
   const name = useStore((s) => s.profile.name);
+  const character = useStore((s) => s.character);
+
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
   return (
