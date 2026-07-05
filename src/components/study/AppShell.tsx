@@ -185,10 +185,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [authState, setAuthState] = useState<"loading" | "in" | "out">("loading");
 
+  // Single source of truth: onAuthStateChange fires INITIAL_SESSION on subscribe,
+  // so we don't need a separate getUser() call that can race with it.
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setAuthState(data.user ? "in" : "out");
-    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setAuthState(session?.user ? "in" : "out");
     });
@@ -196,12 +195,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (authState === "out" && pathname !== "/auth") {
+    if (authState === "out" && pathname !== "/auth" && pathname !== "/reset-password") {
       navigate({ to: "/auth", replace: true });
     }
   }, [authState, pathname, navigate]);
 
-  if (pathname === "/auth") {
+  // Public routes that don't need the app shell
+  if (pathname === "/auth" || pathname === "/reset-password") {
     return <div className="min-h-screen bg-background">{children}</div>;
   }
 

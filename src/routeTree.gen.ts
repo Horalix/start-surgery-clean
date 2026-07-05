@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RapidRouteImport } from './routes/rapid'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -27,6 +28,11 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RapidRoute = RapidRouteImport.update({
   id: '/rapid',
   path: '/rapid',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
   '/rapid': typeof RapidRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
   '/rapid': typeof RapidRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
   '/rapid': typeof RapidRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/notebook'
     | '/rapid'
+    | '/reset-password'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/.mcp/invoke-tool/$tool'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/notebook'
     | '/rapid'
+    | '/reset-password'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/.mcp/invoke-tool/$tool'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/notebook'
     | '/rapid'
+    | '/reset-password'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/.mcp/invoke-tool/$tool'
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   NotebookRoute: typeof NotebookRoute
   RapidRoute: typeof RapidRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -256,6 +269,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rapid': {
       id: '/rapid'
       path: '/rapid'
@@ -393,6 +413,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   NotebookRoute: NotebookRoute,
   RapidRoute: RapidRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
