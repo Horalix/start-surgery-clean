@@ -181,6 +181,38 @@ function HeaderStats() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const [authState, setAuthState] = useState<"loading" | "in" | "out">("loading");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthState(data.user ? "in" : "out");
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthState(session?.user ? "in" : "out");
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (authState === "out" && pathname !== "/auth") {
+      navigate({ to: "/auth", replace: true });
+    }
+  }, [authState, pathname, navigate]);
+
+  if (pathname === "/auth") {
+    return <div className="min-h-screen bg-background">{children}</div>;
+  }
+
+  if (authState !== "in") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Checking sign-in…</div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-background">
