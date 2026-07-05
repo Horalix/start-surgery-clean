@@ -351,7 +351,7 @@ function Lobby({
 
         <aside className="rounded-2xl border bg-card p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <Companion level={level} size={58} character={useStore.getState().character} />
+            <Companion level={level} size={58} character={character} />
             <div>
               <h2 className="text-base font-semibold">Your record</h2>
               <p className="text-sm text-muted-foreground">
