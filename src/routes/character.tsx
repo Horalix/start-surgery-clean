@@ -233,50 +233,46 @@ function CharacterPage() {
             </p>
           </div>
 
-          {(canAngel || canDevil) && (
-            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-transparent p-4">
-              <Label className="mb-2 block text-sm font-semibold">
-                ✨ Secret forms{" "}
+          {availableSpecials.length > 0 && (
+            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4">
+              <Label className="mb-1 block text-sm font-semibold">
+                ✨ Legendary forms{" "}
                 <span className="ml-1 text-xs font-normal text-muted-foreground">
                   (unlocked for you)
                 </span>
               </Label>
-              <div className="flex flex-wrap gap-2">
-                {canAngel && (
-                  <button
-                    onClick={() => setSpecial("angel")}
-                    className={cn(
-                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
-                      draft.special === "angel"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:bg-accent",
-                    )}
-                  >
-                    😇 Angel
-                  </button>
-                )}
-                {canDevil && (
-                  <button
-                    onClick={() => setSpecial("devil")}
-                    className={cn(
-                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
-                      draft.special === "devil"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:bg-accent",
-                    )}
-                  >
-                    😈 Devil
-                  </button>
-                )}
-                {draft.special && (
-                  <button
-                    onClick={() => setSpecial(undefined)}
-                    className="rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
-                  >
-                    Remove
-                  </button>
-                )}
+              <p className="mb-3 text-xs text-muted-foreground">
+                Full custom skins that replace your surgeon. Everyone will see them everywhere.
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {availableSpecials.map((f) => {
+                  const active = draft.special === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      onClick={() => setSpecial(f.key)}
+                      className={cn(
+                        "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                        active
+                          ? "border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30"
+                          : "border-border hover:bg-accent",
+                      )}
+                    >
+                      <span className="text-lg">{f.emoji}</span>
+                      <span className="text-sm font-bold leading-none">{f.label}</span>
+                      <span className="text-[11px] text-muted-foreground">{f.sub}</span>
+                    </button>
+                  );
+                })}
               </div>
+              {draft.special && (
+                <button
+                  onClick={() => setSpecial(undefined)}
+                  className="mt-3 rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
+                >
+                  Remove legendary form
+                </button>
+              )}
             </div>
           )}
         </section>
