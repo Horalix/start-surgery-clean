@@ -94,6 +94,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Surgery I — Final Mastery" },
+      { name: "description", content: "A focused training system to master the Surgery I final: 156-question bank, exact 74-question exam replica, adaptive review, and analytics." },
+      { property: "og:description", content: "A focused training system to master the Surgery I final: 156-question bank, exact 74-question exam replica, adaptive review, and analytics." },
+      { name: "twitter:description", content: "A focused training system to master the Surgery I final: 156-question bank, exact 74-question exam replica, adaptive review, and analytics." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/c71ad8ab-74d4-4b2b-becc-c4f0bda22dad" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/c71ad8ab-74d4-4b2b-becc-c4f0bda22dad" },
     ],
     links: [
       {
