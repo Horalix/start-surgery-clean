@@ -105,6 +105,33 @@ function buildPixels(level: number, mood: CompanionMood, character?: CharacterCu
     }
   }
 
+  // ── Secret overlays: angel / devil ──
+  if (character?.special === "angel") {
+    // Halo
+    add(5, 0, 6, 1, "#ffe066");
+    add(4, 0, 1, 1, "#f5c518");
+    add(11, 0, 1, 1, "#f5c518");
+    add(6, 0, 4, 1, "#fff5b0");
+    // Wings
+    add(2, 9, 1, 3, "#ffffff");
+    add(1, 10, 1, 2, "#f2f5fa");
+    add(13, 9, 1, 3, "#ffffff");
+    add(14, 10, 1, 2, "#f2f5fa");
+  } else if (character?.special === "devil") {
+    // Horns
+    add(5, 1, 1, 1, "#c9302c");
+    add(10, 1, 1, 1, "#c9302c");
+    add(5, 0, 1, 1, "#8b1a1a");
+    add(10, 0, 1, 1, "#8b1a1a");
+    // Trident tip peeking behind shoulder
+    add(13, 8, 1, 1, "#c9302c");
+    add(13, 9, 1, 3, "#8b5a2b");
+    // Tail
+    add(12, 14, 1, 1, "#c9302c");
+    add(13, 15, 1, 1, "#c9302c");
+    add(14, 14, 1, 1, "#8b1a1a");
+  }
+
   return px;
 }
 
