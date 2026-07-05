@@ -18,6 +18,8 @@ import {
   Flame,
   LogIn,
   LogOut,
+  Trophy,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore, toggleTheme } from "@/lib/study/store";
@@ -42,7 +44,10 @@ const NAV: NavItem[] = [
   { to: "/notebook", label: "Mistake Notebook", icon: NotebookPen },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/battle", label: "Battle Arena", icon: Swords },
+  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/character", label: "Character", icon: UserCog },
 ];
+
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
