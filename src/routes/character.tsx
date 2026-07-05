@@ -213,6 +213,53 @@ function CharacterPage() {
               Some gear also unlocks automatically as you level up.
             </p>
           </div>
+
+          {(canAngel || canDevil) && (
+            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-transparent p-4">
+              <Label className="mb-2 block text-sm font-semibold">
+                ✨ Secret forms{" "}
+                <span className="ml-1 text-xs font-normal text-muted-foreground">
+                  (unlocked for you)
+                </span>
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {canAngel && (
+                  <button
+                    onClick={() => setSpecial("angel")}
+                    className={cn(
+                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
+                      draft.special === "angel"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-accent",
+                    )}
+                  >
+                    😇 Angel
+                  </button>
+                )}
+                {canDevil && (
+                  <button
+                    onClick={() => setSpecial("devil")}
+                    className={cn(
+                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
+                      draft.special === "devil"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-accent",
+                    )}
+                  >
+                    😈 Devil
+                  </button>
+                )}
+                {draft.special && (
+                  <button
+                    onClick={() => setSpecial(undefined)}
+                    className="rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>
