@@ -114,14 +114,17 @@ export function Companion({
   size = 96,
   bob = true,
   className,
+  character,
 }: {
   level: number;
   mood?: CompanionMood;
   size?: number;
   bob?: boolean;
   className?: string;
+  character?: CharacterCustomization;
 }) {
-  const pixels = useMemo(() => buildPixels(level, mood), [level, mood]);
+  const pixels = useMemo(() => buildPixels(level, mood, character), [level, mood, character]);
+
   const moodClass =
     mood === "happy"
       ? "companion-happy"
