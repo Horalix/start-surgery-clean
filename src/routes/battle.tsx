@@ -206,16 +206,25 @@ function Lobby({
         })
         .select("id")
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error("[battle] host room insert failed:", error);
+        const err = error as { message?: string; details?: string; hint?: string; code?: string };
+        throw new Error(err.message || err.details || err.hint || "Insert failed");
+      }
       const room = data as { id: string };
       const { error: joinErr } = await db.from("battle_players").insert({
         room_id: room.id,
         user_id: userId,
         display_name: displayName,
       });
-      if (joinErr) throw joinErr;
+      if (joinErr) {
+        console.error("[battle] host self-join failed:", joinErr);
+        const err = joinErr as { message?: string; details?: string; hint?: string };
+        throw new Error(err.message || err.details || err.hint || "Failed to join own room");
+      }
       onEnter(room.id);
     } catch (e) {
+      console.error("[battle] host() error:", e);
       toast.error(e instanceof Error ? e.message : "Failed to host");
     } finally {
       setBusy(false);
