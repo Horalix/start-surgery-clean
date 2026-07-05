@@ -210,7 +210,7 @@ function Lobby({
       if (error) {
         console.error("[battle] host room insert failed:", error);
         const err = error as { message?: string; details?: string; hint?: string; code?: string };
-        throw new Error(err.message || err.details || err.hint || "Insert failed");
+        throw new Error(err.message || err.details || err.hint || "Room creation was blocked");
       }
       const room = data as { id: string };
       const { error: joinErr } = await db.from("battle_players").insert({
@@ -223,6 +223,7 @@ function Lobby({
         const err = joinErr as { message?: string; details?: string; hint?: string };
         throw new Error(err.message || err.details || err.hint || "Failed to join own room");
       }
+      toast.success(`Room ${code} created`);
       onEnter(room.id);
     } catch (e) {
       console.error("[battle] host() error:", e);

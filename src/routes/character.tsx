@@ -50,10 +50,12 @@ const SPECIAL_FORMS: { key: Special; emoji: string; label: string; sub: string }
   { key: "phoenix", emoji: "🔥", label: "Phoenix", sub: "Reborn in Flame" },
   { key: "void", emoji: "🌌", label: "Void", sub: "Cosmic Wanderer" },
   { key: "titan", emoji: "⚔️", label: "Titan", sub: "Golden Warrior" },
+  { key: "professor", emoji: "🎙️", label: "Professor", sub: "100% Exam Boss" },
 ];
 
 function CharacterPage() {
   const xp = useStore((s) => s.profile.xp);
+  const bestExamScore = useStore((s) => s.profile.bestExamScore);
   const profileName = useStore((s) => s.profile.name);
   const saved = useStore((s) => s.character);
   const lp = levelProgress(xp);
@@ -75,12 +77,16 @@ function CharacterPage() {
   const canDevil = DEVIL_EMAILS.includes(emailLc) || DEVIL_NAMES.some((n) => nameLc.includes(n));
   const canShared =
     SHARED_EMAILS.includes(emailLc) || SHARED_NAMES.some((n) => nameLc.includes(n));
+  const hasPerfectExam = (bestExamScore ?? 0) >= 74;
 
   const availableSpecials = SPECIAL_FORMS.filter((f) => {
     if (f.key === "angel") return canAngel;
     if (f.key === "devil") return canDevil;
+    if (f.key === "professor") return hasPerfectExam;
     return canShared;
   });
+
+  const lockedExamForm = !hasPerfectExam;
 
   const palette = { ...stage.palette, ...(draft.palette ?? {}) };
   const props = { ...stage.props, ...(draft.props ?? {}) };
@@ -105,7 +111,12 @@ function CharacterPage() {
         await supabase
           .from("profiles")
           .upsert(
-            { user_id: data.user.id, display_name: displayName, character: draft as never },
+            {
+              user_id: data.user.id,
+              display_name: displayName,
+              character: draft as never,
+              best_exam_score: bestExamScore ?? 0,
+            } as never,
             { onConflict: "user_id" },
           );
       }
@@ -273,6 +284,23 @@ function CharacterPage() {
                   Remove legendary form
                 </button>
               )}
+            </div>
+          )}
+
+          {lockedExamForm && (
+            <div className="rounded-2xl border-2 border-dashed border-border bg-card p-4">
+              <Label className="mb-1 block text-sm font-semibold">🔒 Perfect exam form</Label>
+              <div className="flex items-center gap-4">
+                <div className="flex size-20 shrink-0 items-center justify-center rounded-xl bg-primary/10 opacity-70 grayscale">
+                  <Companion level={lp.level} size={70} character={{ special: "professor" }} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold">Professor · 100% Exam Boss</div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Locked until you score 74/74 on Exam Simulation. Best score: {bestExamScore ?? 0}/74.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </section>
