@@ -191,6 +191,7 @@ function Lobby({
   const [joinCode, setJoinCode] = useState("");
   const [busy, setBusy] = useState(false);
   const profile = useStore((s) => s.profile);
+  const character = useStore((s) => s.character);
 
   const host = async () => {
     setBusy(true);
