@@ -89,7 +89,7 @@ function CharacterPage() {
     setDraft((d) => ({ ...d, palette: { ...(d.palette ?? {}), ...p } }));
   const toggleProp = (k: (typeof PROPS)[number]["key"]) =>
     setDraft((d) => ({ ...d, props: { ...(d.props ?? {}), [k]: !props[k] } }));
-  const setSpecial = (s: "angel" | "devil" | undefined) =>
+  const setSpecial = (s: Special | undefined) =>
     setDraft((d) => ({ ...d, special: d.special === s ? undefined : s }));
 
   const save = async () => {
