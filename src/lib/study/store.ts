@@ -48,6 +48,14 @@ let state: AppState = defaultState();
 let hydrated = false;
 const listeners = new Set<() => void>();
 
+function sanitizeState(next: AppState): AppState {
+  if (next.character?.special === "professor" && (next.profile.bestExamScore ?? 0) < 74) {
+    const { special: _locked, ...character } = next.character;
+    return { ...next, character };
+  }
+  return next;
+}
+
 function emit() {
   for (const l of listeners) l();
 }
@@ -70,7 +78,7 @@ export function hydrate() {
     if (raw) {
       const parsed = JSON.parse(raw) as AppState;
       if (parsed && parsed.version === VERSION) {
-        state = { ...defaultState(), ...parsed };
+        state = sanitizeState({ ...defaultState(), ...parsed });
       }
     }
   } catch {
@@ -240,5 +248,5 @@ export function resetAllProgress() {
 
 // ── Character customization ──────────────────────────────────────────────────
 export function setCharacter(character: CharacterCustomization) {
-  set((s) => ({ ...s, character }));
+  set((s) => sanitizeState({ ...s, character }));
 }
