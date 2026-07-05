@@ -40,6 +40,17 @@ const ANGEL_EMAILS = ["kerim.sabic@gmail.com"];
 const ANGEL_NAMES = ["kerim"];
 const DEVIL_EMAILS = ["amrudin.naser@gmail.com"];
 const DEVIL_NAMES = ["amrudin"];
+const SHARED_EMAILS = ["kerim.sabic@gmail.com", "amrudin.naser@gmail.com"];
+const SHARED_NAMES = ["kerim", "amrudin"];
+
+type Special = NonNullable<CharacterCustomization["special"]>;
+const SPECIAL_FORMS: { key: Special; emoji: string; label: string; sub: string }[] = [
+  { key: "angel", emoji: "😇", label: "Angel", sub: "Celestial Healer" },
+  { key: "devil", emoji: "😈", label: "Devil", sub: "Shadow Surgeon" },
+  { key: "phoenix", emoji: "🔥", label: "Phoenix", sub: "Reborn in Flame" },
+  { key: "void", emoji: "🌌", label: "Void", sub: "Cosmic Wanderer" },
+  { key: "titan", emoji: "⚔️", label: "Titan", sub: "Golden Warrior" },
+];
 
 function CharacterPage() {
   const xp = useStore((s) => s.profile.xp);
@@ -62,6 +73,14 @@ function CharacterPage() {
   const emailLc = (email ?? "").trim().toLowerCase();
   const canAngel = ANGEL_EMAILS.includes(emailLc) || ANGEL_NAMES.some((n) => nameLc.includes(n));
   const canDevil = DEVIL_EMAILS.includes(emailLc) || DEVIL_NAMES.some((n) => nameLc.includes(n));
+  const canShared =
+    SHARED_EMAILS.includes(emailLc) || SHARED_NAMES.some((n) => nameLc.includes(n));
+
+  const availableSpecials = SPECIAL_FORMS.filter((f) => {
+    if (f.key === "angel") return canAngel;
+    if (f.key === "devil") return canDevil;
+    return canShared;
+  });
 
   const palette = { ...stage.palette, ...(draft.palette ?? {}) };
   const props = { ...stage.props, ...(draft.props ?? {}) };
@@ -70,7 +89,7 @@ function CharacterPage() {
     setDraft((d) => ({ ...d, palette: { ...(d.palette ?? {}), ...p } }));
   const toggleProp = (k: (typeof PROPS)[number]["key"]) =>
     setDraft((d) => ({ ...d, props: { ...(d.props ?? {}), [k]: !props[k] } }));
-  const setSpecial = (s: "angel" | "devil" | undefined) =>
+  const setSpecial = (s: Special | undefined) =>
     setDraft((d) => ({ ...d, special: d.special === s ? undefined : s }));
 
   const save = async () => {
@@ -214,50 +233,46 @@ function CharacterPage() {
             </p>
           </div>
 
-          {(canAngel || canDevil) && (
-            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-transparent p-4">
-              <Label className="mb-2 block text-sm font-semibold">
-                ✨ Secret forms{" "}
+          {availableSpecials.length > 0 && (
+            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4">
+              <Label className="mb-1 block text-sm font-semibold">
+                ✨ Legendary forms{" "}
                 <span className="ml-1 text-xs font-normal text-muted-foreground">
                   (unlocked for you)
                 </span>
               </Label>
-              <div className="flex flex-wrap gap-2">
-                {canAngel && (
-                  <button
-                    onClick={() => setSpecial("angel")}
-                    className={cn(
-                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
-                      draft.special === "angel"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:bg-accent",
-                    )}
-                  >
-                    😇 Angel
-                  </button>
-                )}
-                {canDevil && (
-                  <button
-                    onClick={() => setSpecial("devil")}
-                    className={cn(
-                      "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
-                      draft.special === "devil"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:bg-accent",
-                    )}
-                  >
-                    😈 Devil
-                  </button>
-                )}
-                {draft.special && (
-                  <button
-                    onClick={() => setSpecial(undefined)}
-                    className="rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
-                  >
-                    Remove
-                  </button>
-                )}
+              <p className="mb-3 text-xs text-muted-foreground">
+                Full custom skins that replace your surgeon. Everyone will see them everywhere.
+              </p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {availableSpecials.map((f) => {
+                  const active = draft.special === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      onClick={() => setSpecial(f.key)}
+                      className={cn(
+                        "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                        active
+                          ? "border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30"
+                          : "border-border hover:bg-accent",
+                      )}
+                    >
+                      <span className="text-lg">{f.emoji}</span>
+                      <span className="text-sm font-bold leading-none">{f.label}</span>
+                      <span className="text-[11px] text-muted-foreground">{f.sub}</span>
+                    </button>
+                  );
+                })}
               </div>
+              {draft.special && (
+                <button
+                  onClick={() => setSpecial(undefined)}
+                  className="mt-3 rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
+                >
+                  Remove legendary form
+                </button>
+              )}
             </div>
           )}
         </section>
