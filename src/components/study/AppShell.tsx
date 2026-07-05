@@ -151,7 +151,7 @@ function HeaderStats() {
         title={`${stage.title} · Level ${lp.level}`}
       >
         <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-primary/10">
-          <Companion level={lp.level} size={30} bob={false} />
+          <Companion level={lp.level} size={30} bob={false} character={character} />
         </span>
         <span className="leading-tight">
           <span className="block text-xs font-semibold">Lv {lp.level}</span>
@@ -269,7 +269,7 @@ function CompanionFooter() {
     <div className="mt-4 rounded-xl border bg-card p-3">
       <div className="flex items-center gap-3">
         <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-          <Companion level={lp.level} size={44} />
+          <Companion level={lp.level} size={44} character={character} />
         </div>
         <div className="min-w-0 leading-tight">
           <div className="truncate text-sm font-semibold">{stage.title}</div>
