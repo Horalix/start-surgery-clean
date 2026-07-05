@@ -15,6 +15,8 @@ export interface CompanionStage {
   props: { cap: boolean; mask: boolean; glasses: boolean; badge: boolean; loupe: boolean };
 }
 
+export type CompanionMood = "idle" | "happy" | "sad" | "thinking";
+
 export const XP_PER_LEVEL = 120;
 
 export function levelForXp(xp: number): number {
