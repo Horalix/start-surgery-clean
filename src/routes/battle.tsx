@@ -687,34 +687,35 @@ function PlayingRoom({
           .select("*")
           .eq("user_id", userId)
           .eq("mode", room.mode)
-          .maybeSingle()) as { data: {
+          .maybeSingle()) as {
+          data: {
             best_score: number;
+            best_correct: number;
+            best_total_ms: number;
             wins: number;
             matches: number;
-          } | null };
-        const prevBest = existing?.best_score ?? -Infinity;
-        const isNewBest = me.score > prevBest;
-        const payload = {
-          user_id: userId,
-          mode: room.mode,
-          display_name: displayName,
-          best_score: isNewBest ? me.score : (existing?.best_score ?? me.score),
-          best_correct: isNewBest ? me.correct_count : (existing?.best_score ?? 0) === me.score ? me.correct_count : existing?.best_score !== undefined ? undefined as unknown as number : me.correct_count,
-          best_total_ms: isNewBest ? me.total_ms : undefined as unknown as number,
-          wins: (existing?.wins ?? 0) + (won ? 1 : 0),
-          matches: (existing?.matches ?? 0) + 1,
+          } | null;
         };
-        // Clean undefined fields
-        const clean: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(payload)) if (v !== undefined) clean[k] = v;
-        await db
-          .from("leaderboard_entries")
-          .upsert(clean, { onConflict: "user_id,mode" });
+        const isNewBest = !existing || me.score > existing.best_score;
+        await db.from("leaderboard_entries").upsert(
+          {
+            user_id: userId,
+            mode: room.mode,
+            display_name: displayName,
+            best_score: isNewBest ? me.score : existing!.best_score,
+            best_correct: isNewBest ? me.correct_count : existing!.best_correct,
+            best_total_ms: isNewBest ? me.total_ms : existing!.best_total_ms,
+            wins: (existing?.wins ?? 0) + (won ? 1 : 0),
+            matches: (existing?.matches ?? 0) + 1,
+          },
+          { onConflict: "user_id,mode" },
+        );
       } catch {
         /* ignore leaderboard errors */
       }
     })();
   }, [allFinished, me, opponent, userId, displayName, room.mode]);
+
 
 
   const toggle = (id: string) => {
