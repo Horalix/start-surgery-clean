@@ -40,6 +40,17 @@ const ANGEL_EMAILS = ["kerim.sabic@gmail.com"];
 const ANGEL_NAMES = ["kerim"];
 const DEVIL_EMAILS = ["amrudin.naser@gmail.com"];
 const DEVIL_NAMES = ["amrudin"];
+const SHARED_EMAILS = ["kerim.sabic@gmail.com", "amrudin.naser@gmail.com"];
+const SHARED_NAMES = ["kerim", "amrudin"];
+
+type Special = NonNullable<CharacterCustomization["special"]>;
+const SPECIAL_FORMS: { key: Special; emoji: string; label: string; sub: string }[] = [
+  { key: "angel", emoji: "😇", label: "Angel", sub: "Celestial Healer" },
+  { key: "devil", emoji: "😈", label: "Devil", sub: "Shadow Surgeon" },
+  { key: "phoenix", emoji: "🔥", label: "Phoenix", sub: "Reborn in Flame" },
+  { key: "void", emoji: "🌌", label: "Void", sub: "Cosmic Wanderer" },
+  { key: "titan", emoji: "⚔️", label: "Titan", sub: "Golden Warrior" },
+];
 
 function CharacterPage() {
   const xp = useStore((s) => s.profile.xp);
@@ -62,6 +73,14 @@ function CharacterPage() {
   const emailLc = (email ?? "").trim().toLowerCase();
   const canAngel = ANGEL_EMAILS.includes(emailLc) || ANGEL_NAMES.some((n) => nameLc.includes(n));
   const canDevil = DEVIL_EMAILS.includes(emailLc) || DEVIL_NAMES.some((n) => nameLc.includes(n));
+  const canShared =
+    SHARED_EMAILS.includes(emailLc) || SHARED_NAMES.some((n) => nameLc.includes(n));
+
+  const availableSpecials = SPECIAL_FORMS.filter((f) => {
+    if (f.key === "angel") return canAngel;
+    if (f.key === "devil") return canDevil;
+    return canShared;
+  });
 
   const palette = { ...stage.palette, ...(draft.palette ?? {}) };
   const props = { ...stage.props, ...(draft.props ?? {}) };
