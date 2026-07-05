@@ -135,6 +135,8 @@ function HeaderStats() {
   const xp = useStore((s) => s.profile.xp);
   const streak = useStore((s) => s.profile.streakDays);
   const theme = useStore((s) => s.settings.theme);
+  const character = useStore((s) => s.character);
+
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
 
