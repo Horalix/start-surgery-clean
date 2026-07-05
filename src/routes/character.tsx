@@ -36,16 +36,32 @@ const PROPS: { key: "cap" | "mask" | "glasses" | "badge" | "loupe"; label: strin
   { key: "loupe", label: "Surgical loupe" },
 ];
 
+const ANGEL_EMAILS = ["kerim.sabic@gmail.com"];
+const ANGEL_NAMES = ["kerim"];
+const DEVIL_EMAILS = ["amrudin.naser@gmail.com"];
+const DEVIL_NAMES = ["amrudin"];
+
 function CharacterPage() {
   const xp = useStore((s) => s.profile.xp);
+  const profileName = useStore((s) => s.profile.name);
   const saved = useStore((s) => s.character);
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
 
   const [draft, setDraft] = useState<CharacterCustomization>(saved ?? {});
   const [savingCloud, setSavingCloud] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => setDraft(saved ?? {}), [saved]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+  }, []);
+
+  const nameLc = (profileName ?? "").trim().toLowerCase();
+  const emailLc = (email ?? "").trim().toLowerCase();
+  const canAngel = ANGEL_EMAILS.includes(emailLc) || ANGEL_NAMES.some((n) => nameLc.includes(n));
+  const canDevil = DEVIL_EMAILS.includes(emailLc) || DEVIL_NAMES.some((n) => nameLc.includes(n));
 
   const palette = { ...stage.palette, ...(draft.palette ?? {}) };
   const props = { ...stage.props, ...(draft.props ?? {}) };
@@ -54,6 +70,8 @@ function CharacterPage() {
     setDraft((d) => ({ ...d, palette: { ...(d.palette ?? {}), ...p } }));
   const toggleProp = (k: (typeof PROPS)[number]["key"]) =>
     setDraft((d) => ({ ...d, props: { ...(d.props ?? {}), [k]: !props[k] } }));
+  const setSpecial = (s: "angel" | "devil" | undefined) =>
+    setDraft((d) => ({ ...d, special: d.special === s ? undefined : s }));
 
   const save = async () => {
     setCharacter(draft);
