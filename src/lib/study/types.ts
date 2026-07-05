@@ -74,7 +74,7 @@ export interface Settings {
   examTimerMinutes: number;
 }
 
-export type SpecialCharacter = "angel" | "devil";
+export type SpecialCharacter = "angel" | "devil" | "phoenix" | "void" | "titan";
 
 export interface CharacterCustomization {
   palette?: Partial<{
