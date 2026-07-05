@@ -672,14 +672,51 @@ function PlayingRoom({
     }
   }, [allFinished, room.host_user_id, room.status, room.id, userId]);
 
-  // Record local win/loss when finished
+  // Record local win/loss + upsert global leaderboard when finished
   useEffect(() => {
     if (!allFinished || battleRecordedRef.current) return;
     if (!me || !opponent) return;
     battleRecordedRef.current = true;
     const won = me.score > opponent.score;
     recordBattle(won);
-  }, [allFinished, me, opponent]);
+
+    (async () => {
+      try {
+        const { data: existing } = (await db
+          .from("leaderboard_entries")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("mode", room.mode)
+          .maybeSingle()) as {
+          data: {
+            best_score: number;
+            best_correct: number;
+            best_total_ms: number;
+            wins: number;
+            matches: number;
+          } | null;
+        };
+        const isNewBest = !existing || me.score > existing.best_score;
+        await db.from("leaderboard_entries").upsert(
+          {
+            user_id: userId,
+            mode: room.mode,
+            display_name: displayName,
+            best_score: isNewBest ? me.score : existing!.best_score,
+            best_correct: isNewBest ? me.correct_count : existing!.best_correct,
+            best_total_ms: isNewBest ? me.total_ms : existing!.best_total_ms,
+            wins: (existing?.wins ?? 0) + (won ? 1 : 0),
+            matches: (existing?.matches ?? 0) + 1,
+          },
+          { onConflict: "user_id,mode" },
+        );
+      } catch {
+        /* ignore leaderboard errors */
+      }
+    })();
+  }, [allFinished, me, opponent, userId, displayName, room.mode]);
+
+
 
   const toggle = (id: string) => {
     if (!currentQ) return;

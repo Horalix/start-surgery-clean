@@ -18,6 +18,8 @@ import {
   Flame,
   LogIn,
   LogOut,
+  Trophy,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore, toggleTheme } from "@/lib/study/store";
@@ -42,7 +44,10 @@ const NAV: NavItem[] = [
   { to: "/notebook", label: "Mistake Notebook", icon: NotebookPen },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/battle", label: "Battle Arena", icon: Swords },
+  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { to: "/character", label: "Character", icon: UserCog },
 ];
+
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
@@ -130,6 +135,8 @@ function HeaderStats() {
   const xp = useStore((s) => s.profile.xp);
   const streak = useStore((s) => s.profile.streakDays);
   const theme = useStore((s) => s.settings.theme);
+  const character = useStore((s) => s.character);
+
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
 
@@ -146,7 +153,7 @@ function HeaderStats() {
         title={`${stage.title} · Level ${lp.level}`}
       >
         <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-primary/10">
-          <Companion level={lp.level} size={30} bob={false} />
+          <Companion level={lp.level} size={30} bob={false} character={character} />
         </span>
         <span className="leading-tight">
           <span className="block text-xs font-semibold">Lv {lp.level}</span>
@@ -258,13 +265,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 function CompanionFooter() {
   const xp = useStore((s) => s.profile.xp);
   const name = useStore((s) => s.profile.name);
+  const character = useStore((s) => s.character);
+
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
   return (
     <div className="mt-4 rounded-xl border bg-card p-3">
       <div className="flex items-center gap-3">
         <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-          <Companion level={lp.level} size={44} />
+          <Companion level={lp.level} size={44} character={character} />
         </div>
         <div className="min-w-0 leading-tight">
           <div className="truncate text-sm font-semibold">{stage.title}</div>

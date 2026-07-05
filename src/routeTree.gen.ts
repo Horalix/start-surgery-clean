@@ -13,9 +13,11 @@ import { Route as RapidRouteImport } from './routes/rapid'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LearnRouteImport } from './routes/learn'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as IntegrityRouteImport } from './routes/integrity'
 import { Route as ExamRouteImport } from './routes/exam'
 import { Route as DrillRouteImport } from './routes/drill'
+import { Route as CharacterRouteImport } from './routes/character'
 import { Route as BattleRouteImport } from './routes/battle'
 import { Route as BankRouteImport } from './routes/bank'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -45,6 +47,11 @@ const LearnRoute = LearnRouteImport.update({
   path: '/learn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntegrityRoute = IntegrityRouteImport.update({
   id: '/integrity',
   path: '/integrity',
@@ -58,6 +65,11 @@ const ExamRoute = ExamRouteImport.update({
 const DrillRoute = DrillRouteImport.update({
   id: '/drill',
   path: '/drill',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CharacterRoute = CharacterRouteImport.update({
+  id: '/character',
+  path: '/character',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BattleRoute = BattleRouteImport.update({
@@ -110,9 +122,11 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/bank': typeof BankRoute
   '/battle': typeof BattleRoute
+  '/character': typeof CharacterRoute
   '/drill': typeof DrillRoute
   '/exam': typeof ExamRoute
   '/integrity': typeof IntegrityRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
@@ -127,9 +141,11 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/bank': typeof BankRoute
   '/battle': typeof BattleRoute
+  '/character': typeof CharacterRoute
   '/drill': typeof DrillRoute
   '/exam': typeof ExamRoute
   '/integrity': typeof IntegrityRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
@@ -145,9 +161,11 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/bank': typeof BankRoute
   '/battle': typeof BattleRoute
+  '/character': typeof CharacterRoute
   '/drill': typeof DrillRoute
   '/exam': typeof ExamRoute
   '/integrity': typeof IntegrityRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
@@ -164,9 +182,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/bank'
     | '/battle'
+    | '/character'
     | '/drill'
     | '/exam'
     | '/integrity'
+    | '/leaderboard'
     | '/learn'
     | '/mcp'
     | '/notebook'
@@ -181,9 +201,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/bank'
     | '/battle'
+    | '/character'
     | '/drill'
     | '/exam'
     | '/integrity'
+    | '/leaderboard'
     | '/learn'
     | '/mcp'
     | '/notebook'
@@ -198,9 +220,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/bank'
     | '/battle'
+    | '/character'
     | '/drill'
     | '/exam'
     | '/integrity'
+    | '/leaderboard'
     | '/learn'
     | '/mcp'
     | '/notebook'
@@ -216,9 +240,11 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BankRoute: typeof BankRoute
   BattleRoute: typeof BattleRoute
+  CharacterRoute: typeof CharacterRoute
   DrillRoute: typeof DrillRoute
   ExamRoute: typeof ExamRoute
   IntegrityRoute: typeof IntegrityRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LearnRoute: typeof LearnRoute
   McpRoute: typeof McpRoute
   NotebookRoute: typeof NotebookRoute
@@ -258,6 +284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LearnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/integrity': {
       id: '/integrity'
       path: '/integrity'
@@ -277,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/drill'
       fullPath: '/drill'
       preLoaderRoute: typeof DrillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/character': {
+      id: '/character'
+      path: '/character'
+      fullPath: '/character'
+      preLoaderRoute: typeof CharacterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/battle': {
@@ -344,9 +384,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BankRoute: BankRoute,
   BattleRoute: BattleRoute,
+  CharacterRoute: CharacterRoute,
   DrillRoute: DrillRoute,
   ExamRoute: ExamRoute,
   IntegrityRoute: IntegrityRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LearnRoute: LearnRoute,
   McpRoute: McpRoute,
   NotebookRoute: NotebookRoute,

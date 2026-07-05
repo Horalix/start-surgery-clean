@@ -74,16 +74,35 @@ export interface Settings {
   examTimerMinutes: number;
 }
 
+export interface CharacterCustomization {
+  palette?: Partial<{
+    skin: string;
+    scrub: string;
+    scrubDark: string;
+    hair: string;
+    accent: string;
+  }>;
+  props?: Partial<{
+    cap: boolean;
+    mask: boolean;
+    glasses: boolean;
+    badge: boolean;
+    loupe: boolean;
+  }>;
+}
+
 export interface AppState {
   version: number;
   profile: Profile;
   settings: Settings;
+  character?: CharacterCustomization;
   progress: Record<string, QuestionProgress>;
   sessions: SessionSummary[];
   examAttempts: ExamAttempt[];
   flagged: Record<string, boolean>;
   notUnderstood: Record<string, boolean>;
 }
+
 
 export interface GradeResult {
   correct: boolean;

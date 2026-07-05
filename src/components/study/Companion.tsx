@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { stageForLevel, type CompanionMood } from "@/lib/study/companion";
+import type { CharacterCustomization } from "@/lib/study/types";
 import { cn } from "@/lib/utils";
+
 
 interface Px {
   x: number;
@@ -14,11 +16,13 @@ const OUTLINE = "#141c2b";
 const MASK = "#eef3f8";
 const EYE = "#20293b";
 
-function buildPixels(level: number, mood: CompanionMood): Px[] {
+function buildPixels(level: number, mood: CompanionMood, character?: CharacterCustomization): Px[] {
   const st = stageForLevel(level);
-  const p = st.palette;
+  const p = { ...st.palette, ...(character?.palette ?? {}) };
+  const props = { ...st.props, ...(character?.props ?? {}) };
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
+
 
   // ── Body / scrubs ──
   add(4, 8, 8, 7, p.scrub);
@@ -35,7 +39,7 @@ function buildPixels(level: number, mood: CompanionMood): Px[] {
   add(5, 15, 2, 1, p.scrubDark);
   add(9, 15, 2, 1, p.scrubDark);
 
-  if (st.props.badge) add(9, 10, 1, 1, p.accent);
+  if (props.badge) add(9, 10, 1, 1, p.accent);
 
   // ── Neck + head ──
   add(7, 7, 2, 1, p.skin); // neck
@@ -44,7 +48,7 @@ function buildPixels(level: number, mood: CompanionMood): Px[] {
   add(11, 4, 1, 3, p.skin);
 
   // ── Hair / cap ──
-  if (st.props.cap) {
+  if (props.cap) {
     add(4, 1, 8, 2, p.scrub); // cap dome
     add(4, 3, 8, 1, p.scrubDark); // cap band
     add(3, 2, 1, 1, p.scrubDark); // tie left
@@ -75,15 +79,15 @@ function buildPixels(level: number, mood: CompanionMood): Px[] {
   }
 
   // ── Glasses / loupe ──
-  if (st.props.glasses) {
+  if (props.glasses) {
     add(5, 4, 2, 1, OUTLINE);
     add(9, 4, 2, 1, OUTLINE);
     add(8, 4, 1, 1, OUTLINE); // bridge
-    if (st.props.loupe) add(9, 4, 1, 1, p.accent); // loupe lens glint
+    if (props.loupe) add(9, 4, 1, 1, p.accent); // loupe lens glint
   }
 
   // ── Mask or mouth ──
-  if (st.props.mask) {
+  if (props.mask) {
     add(5, 6, 6, 2, MASK);
     add(4, 6, 1, 1, MASK); // straps
     add(11, 6, 1, 1, MASK);
@@ -110,14 +114,17 @@ export function Companion({
   size = 96,
   bob = true,
   className,
+  character,
 }: {
   level: number;
   mood?: CompanionMood;
   size?: number;
   bob?: boolean;
   className?: string;
+  character?: CharacterCustomization;
 }) {
-  const pixels = useMemo(() => buildPixels(level, mood), [level, mood]);
+  const pixels = useMemo(() => buildPixels(level, mood, character), [level, mood, character]);
+
   const moodClass =
     mood === "happy"
       ? "companion-happy"

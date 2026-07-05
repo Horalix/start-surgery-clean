@@ -129,6 +129,66 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard_entries: {
+        Row: {
+          best_correct: number
+          best_score: number
+          best_total_ms: number
+          display_name: string
+          matches: number
+          mode: string
+          updated_at: string
+          user_id: string
+          wins: number
+        }
+        Insert: {
+          best_correct?: number
+          best_score?: number
+          best_total_ms?: number
+          display_name?: string
+          matches?: number
+          mode: string
+          updated_at?: string
+          user_id: string
+          wins?: number
+        }
+        Update: {
+          best_correct?: number
+          best_score?: number
+          best_total_ms?: number
+          display_name?: string
+          matches?: number
+          mode?: string
+          updated_at?: string
+          user_id?: string
+          wins?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          character: Json
+          created_at: string
+          display_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          character?: Json
+          created_at?: string
+          display_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          character?: Json
+          created_at?: string
+          display_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
