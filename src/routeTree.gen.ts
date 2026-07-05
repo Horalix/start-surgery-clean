@@ -13,6 +13,7 @@ import { Route as RapidRouteImport } from './routes/rapid'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LearnRouteImport } from './routes/learn'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as IntegrityRouteImport } from './routes/integrity'
 import { Route as ExamRouteImport } from './routes/exam'
 import { Route as DrillRouteImport } from './routes/drill'
@@ -44,6 +45,11 @@ const McpRoute = McpRouteImport.update({
 const LearnRoute = LearnRouteImport.update({
   id: '/learn',
   path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntegrityRoute = IntegrityRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/drill': typeof DrillRoute
   '/exam': typeof ExamRoute
   '/integrity': typeof IntegrityRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/drill': typeof DrillRoute
   '/exam': typeof ExamRoute
   '/integrity': typeof IntegrityRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/drill': typeof DrillRoute
   '/exam': typeof ExamRoute
   '/integrity': typeof IntegrityRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/drill'
     | '/exam'
     | '/integrity'
+    | '/leaderboard'
     | '/learn'
     | '/mcp'
     | '/notebook'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/drill'
     | '/exam'
     | '/integrity'
+    | '/leaderboard'
     | '/learn'
     | '/mcp'
     | '/notebook'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/drill'
     | '/exam'
     | '/integrity'
+    | '/leaderboard'
     | '/learn'
     | '/mcp'
     | '/notebook'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   DrillRoute: typeof DrillRoute
   ExamRoute: typeof ExamRoute
   IntegrityRoute: typeof IntegrityRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LearnRoute: typeof LearnRoute
   McpRoute: typeof McpRoute
   NotebookRoute: typeof NotebookRoute
@@ -269,6 +282,13 @@ declare module '@tanstack/react-router' {
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/integrity': {
@@ -368,6 +388,7 @@ const rootRouteChildren: RootRouteChildren = {
   DrillRoute: DrillRoute,
   ExamRoute: ExamRoute,
   IntegrityRoute: IntegrityRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LearnRoute: LearnRoute,
   McpRoute: McpRoute,
   NotebookRoute: NotebookRoute,
