@@ -16,11 +16,13 @@ const OUTLINE = "#141c2b";
 const MASK = "#eef3f8";
 const EYE = "#20293b";
 
-function buildPixels(level: number, mood: CompanionMood): Px[] {
+function buildPixels(level: number, mood: CompanionMood, character?: CharacterCustomization): Px[] {
   const st = stageForLevel(level);
-  const p = st.palette;
+  const p = { ...st.palette, ...(character?.palette ?? {}) };
+  const props = { ...st.props, ...(character?.props ?? {}) };
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
+
 
   // ── Body / scrubs ──
   add(4, 8, 8, 7, p.scrub);
