@@ -92,6 +92,40 @@ function Brand() {
   );
 }
 
+function AuthChip() {
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setEmail(session?.user.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  if (email === null) {
+    return (
+      <Link
+        to="/auth"
+        className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-accent"
+      >
+        <LogIn className="size-3.5" /> Sign in
+      </Link>
+    );
+  }
+  return (
+    <button
+      onClick={async () => {
+        await supabase.auth.signOut();
+      }}
+      className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-accent"
+      title={`Signed in as ${email}`}
+    >
+      <LogOut className="size-3.5" /> Sign out
+    </button>
+  );
+}
+
 function HeaderStats() {
   const xp = useStore((s) => s.profile.xp);
   const streak = useStore((s) => s.profile.streakDays);
@@ -124,6 +158,8 @@ function HeaderStats() {
           </span>
         </span>
       </Link>
+
+      <AuthChip />
 
       <button
         onClick={toggleTheme}
