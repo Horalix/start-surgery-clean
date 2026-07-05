@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { stageForLevel, type CompanionMood } from "@/lib/study/companion";
+import type { CharacterCustomization } from "@/lib/study/types";
 import { cn } from "@/lib/utils";
+
 
 interface Px {
   x: number;
