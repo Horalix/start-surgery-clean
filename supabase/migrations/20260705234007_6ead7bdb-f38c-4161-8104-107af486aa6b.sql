@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.enforce_special_character() FROM PUBLIC, anon, authenticated;
