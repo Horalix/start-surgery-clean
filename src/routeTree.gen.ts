@@ -9,15 +9,69 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RapidRouteImport } from './routes/rapid'
+import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as LearnRouteImport } from './routes/learn'
+import { Route as IntegrityRouteImport } from './routes/integrity'
+import { Route as ExamRouteImport } from './routes/exam'
+import { Route as DrillRouteImport } from './routes/drill'
+import { Route as BattleRouteImport } from './routes/battle'
+import { Route as BankRouteImport } from './routes/bank'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
+const RapidRoute = RapidRouteImport.update({
+  id: '/rapid',
+  path: '/rapid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotebookRoute = NotebookRouteImport.update({
+  id: '/notebook',
+  path: '/notebook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearnRoute = LearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrityRoute = IntegrityRouteImport.update({
+  id: '/integrity',
+  path: '/integrity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExamRoute = ExamRouteImport.update({
+  id: '/exam',
+  path: '/exam',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DrillRoute = DrillRouteImport.update({
+  id: '/drill',
+  path: '/drill',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BattleRoute = BattleRouteImport.update({
+  id: '/battle',
+  path: '/battle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BankRoute = BankRouteImport.update({
+  id: '/bank',
+  path: '/bank',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -46,14 +100,32 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/bank': typeof BankRoute
+  '/battle': typeof BattleRoute
+  '/drill': typeof DrillRoute
+  '/exam': typeof ExamRoute
+  '/integrity': typeof IntegrityRoute
+  '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
+  '/notebook': typeof NotebookRoute
+  '/rapid': typeof RapidRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/bank': typeof BankRoute
+  '/battle': typeof BattleRoute
+  '/drill': typeof DrillRoute
+  '/exam': typeof ExamRoute
+  '/integrity': typeof IntegrityRoute
+  '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
+  '/notebook': typeof NotebookRoute
+  '/rapid': typeof RapidRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -61,7 +133,16 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/bank': typeof BankRoute
+  '/battle': typeof BattleRoute
+  '/drill': typeof DrillRoute
+  '/exam': typeof ExamRoute
+  '/integrity': typeof IntegrityRoute
+  '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
+  '/notebook': typeof NotebookRoute
+  '/rapid': typeof RapidRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -70,21 +151,48 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/analytics'
+    | '/bank'
+    | '/battle'
+    | '/drill'
+    | '/exam'
+    | '/integrity'
+    | '/learn'
     | '/mcp'
+    | '/notebook'
+    | '/rapid'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/analytics'
+    | '/bank'
+    | '/battle'
+    | '/drill'
+    | '/exam'
+    | '/integrity'
+    | '/learn'
     | '/mcp'
+    | '/notebook'
+    | '/rapid'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/.mcp/invoke-tool/$tool'
   id:
     | '__root__'
     | '/'
+    | '/analytics'
+    | '/bank'
+    | '/battle'
+    | '/drill'
+    | '/exam'
+    | '/integrity'
+    | '/learn'
     | '/mcp'
+    | '/notebook'
+    | '/rapid'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/.mcp/invoke-tool/$tool'
@@ -92,7 +200,16 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  BankRoute: typeof BankRoute
+  BattleRoute: typeof BattleRoute
+  DrillRoute: typeof DrillRoute
+  ExamRoute: typeof ExamRoute
+  IntegrityRoute: typeof IntegrityRoute
+  LearnRoute: typeof LearnRoute
   McpRoute: typeof McpRoute
+  NotebookRoute: typeof NotebookRoute
+  RapidRoute: typeof RapidRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -100,11 +217,74 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/rapid': {
+      id: '/rapid'
+      path: '/rapid'
+      fullPath: '/rapid'
+      preLoaderRoute: typeof RapidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notebook': {
+      id: '/notebook'
+      path: '/notebook'
+      fullPath: '/notebook'
+      preLoaderRoute: typeof NotebookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn': {
+      id: '/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrity': {
+      id: '/integrity'
+      path: '/integrity'
+      fullPath: '/integrity'
+      preLoaderRoute: typeof IntegrityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exam': {
+      id: '/exam'
+      path: '/exam'
+      fullPath: '/exam'
+      preLoaderRoute: typeof ExamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drill': {
+      id: '/drill'
+      path: '/drill'
+      fullPath: '/drill'
+      preLoaderRoute: typeof DrillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/battle': {
+      id: '/battle'
+      path: '/battle'
+      fullPath: '/battle'
+      preLoaderRoute: typeof BattleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bank': {
+      id: '/bank'
+      path: '/bank'
+      fullPath: '/bank'
+      preLoaderRoute: typeof BankRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -140,7 +320,16 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  BankRoute: BankRoute,
+  BattleRoute: BattleRoute,
+  DrillRoute: DrillRoute,
+  ExamRoute: ExamRoute,
+  IntegrityRoute: IntegrityRoute,
+  LearnRoute: LearnRoute,
   McpRoute: McpRoute,
+  NotebookRoute: NotebookRoute,
+  RapidRoute: RapidRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,

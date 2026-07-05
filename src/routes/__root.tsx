@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ClientGate } from "../components/study/ClientGate";
+import { AppShell } from "../components/study/AppShell";
 
 function NotFoundComponent() {
   return (
@@ -76,15 +78,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Surgery" },
-      { name: "description", content: "Surgery project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Surgery" },
-      { property: "og:description", content: "Surgery project" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { title: "Surgery I — Final Mastery" },
+      {
+        name: "description",
+        content:
+          "A focused training system to master the Surgery I final: 156-question bank, exact 74-question exam replica, adaptive review, and analytics.",
+      },
+      { name: "author", content: "Surgery I Final Mastery" },
+      { name: "theme-color", content: "#2c8ba3" },
+      { property: "og:title", content: "Surgery I — Final Mastery" },
+      {
+        property: "og:description",
+        content: "Master the Surgery I final with adaptive retrieval practice.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
@@ -105,6 +114,11 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var s=JSON.parse(localStorage.getItem('surgery1-mastery-v1'));if(s&&s.settings&&s.settings.theme==='dark'){document.documentElement.classList.add('dark');}}catch(e){}`,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -119,8 +133,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ClientGate>
+        <AppShell>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </AppShell>
+      </ClientGate>
     </QueryClientProvider>
   );
 }
