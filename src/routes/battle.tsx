@@ -5,6 +5,7 @@ import {
   Check,
   Clock,
   Copy,
+  Heart,
   LogIn,
   RotateCcw,
   Swords,
@@ -17,7 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { EXAM_QUESTIONS, type Question } from "@/data/questions";
 import { TOPIC_BY_ID } from "@/data/topics";
 import { grade } from "@/lib/study/types";
-import { recordAnswer, recordBattle, useStore } from "@/lib/study/store";
+import type { CharacterCustomization } from "@/lib/study/types";
+import { recordAnswer, recordBattle, useStore, getState } from "@/lib/study/store";
+import { withDerivedTier } from "@/lib/study/character-progression";
 import { PageTitle, StatCard } from "@/components/study/primitives";
 import { Companion } from "@/components/study/Companion";
 import { levelProgress } from "@/lib/study/companion";
@@ -28,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/battle")({ component: BattlePage });
+
 
 const BATTLE_SIZE = 8;
 
