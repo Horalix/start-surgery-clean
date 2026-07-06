@@ -685,12 +685,122 @@ function buildTitan(mood: CompanionMood): Px[] {
   return px;
 }
 
+// ─── PROFESSOR: Perfect Exam Boss ────────────────────────────────────────────
+function buildProfessor(mood: CompanionMood): Px[] {
+  const px: Px[] = [];
+  const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
+
+  const SKIN = "#f0c9a4";
+  const SKIN_S = "#c8956f";
+  const HAIR = "#d7dbe0";
+  const HAIR_D = "#9aa3ad";
+  const BLAZER = "#182338";
+  const BLAZER_L = "#263a5c";
+  const CHECK = "#6f7b91";
+  const SHIRT = "#dbeafe";
+  const MIC_BLUE = "#174eb6";
+  const MIC_ORANGE = "#f59e0b";
+  const MIC_RED = "#dc2626";
+  const MIC_CYAN = "#06b6d4";
+  const GOLD = "#f2c94c";
+  const BACKDROP = "#1f68b3";
+
+  // Press backdrop flashes — based on the provided reference, stylized as a pixel boss aura.
+  add(-1, 3, 1, 9, BACKDROP);
+  add(16, 3, 1, 9, BACKDROP);
+  add(0, 2, 1, 1, "#8cc7ff");
+  add(15, 2, 1, 1, "#8cc7ff");
+  add(1, 5, 1, 1, "#5aa7f0");
+  add(14, 6, 1, 1, "#5aa7f0");
+
+  // Suit shoulders and checked blazer.
+  add(3, 8, 10, 7, BLAZER);
+  add(3, 8, 1, 7, "#0e1728");
+  add(12, 8, 1, 7, "#0e1728");
+  add(4, 9, 8, 1, BLAZER_L);
+  add(5, 8, 1, 7, CHECK);
+  add(10, 8, 1, 7, CHECK);
+  add(4, 11, 8, 1, CHECK);
+  add(4, 14, 8, 1, CHECK);
+  // Shirt and collar.
+  add(6, 8, 4, 6, SHIRT);
+  add(5, 8, 1, 2, "#ffffff");
+  add(10, 8, 1, 2, "#ffffff");
+  add(7, 9, 2, 1, "#b9d5f8");
+  add(7, 10, 2, 3, "#c9ddf5");
+  // Lapels.
+  add(4, 8, 2, 4, BLAZER_L);
+  add(10, 8, 2, 4, BLAZER_L);
+  add(5, 12, 1, 1, GOLD);
+  // Arms at podium.
+  add(2, 10, 1, 4, BLAZER);
+  add(13, 10, 1, 4, BLAZER);
+  add(3, 13, 1, 1, SKIN);
+  add(12, 13, 1, 1, SKIN);
+
+  // Microphone wall in front.
+  add(4, 15, 2, 2, MIC_BLUE);
+  add(7, 14, 2, 3, MIC_ORANGE);
+  add(10, 15, 2, 2, MIC_RED);
+  add(13, 14, 2, 3, MIC_CYAN);
+  add(5, 14, 1, 1, "#ffffff");
+  add(8, 15, 1, 1, "#ffffff");
+  add(11, 14, 1, 1, "#ffffff");
+  add(14, 15, 1, 1, "#ffffff");
+  add(5, 13, 1, 2, "#3f3f46");
+  add(8, 13, 1, 2, "#3f3f46");
+  add(11, 13, 1, 2, "#3f3f46");
+  add(14, 13, 1, 2, "#3f3f46");
+
+  // Neck and face.
+  add(7, 7, 2, 1, SKIN);
+  add(5, 3, 6, 5, SKIN);
+  add(4, 4, 1, 3, SKIN);
+  add(11, 4, 1, 3, SKIN);
+  add(5, 7, 1, 1, SKIN_S);
+  add(10, 7, 1, 1, SKIN_S);
+  add(8, 5, 1, 1, SKIN_S);
+
+  // White/silver hair with receding crown.
+  add(4, 2, 8, 1, HAIR);
+  add(4, 3, 2, 1, HAIR_D);
+  add(10, 3, 2, 1, HAIR_D);
+  add(4, 4, 1, 1, HAIR);
+  add(11, 4, 1, 1, HAIR);
+  add(5, 2, 2, 1, "#eef2f6");
+  add(9, 2, 2, 1, "#eef2f6");
+  add(7, 1, 2, 1, "#f8fafc");
+
+  // Serious exam-boss expression.
+  add(6, 5, 1, 1, "#172033");
+  add(9, 5, 1, 1, "#172033");
+  add(6, 4, 1, 1, HAIR_D);
+  add(9, 4, 1, 1, HAIR_D);
+  if (mood === "happy") {
+    add(6, 6, 4, 1, "#8a4b45");
+  } else if (mood === "sad") {
+    add(7, 7, 2, 1, "#8a4b45");
+  } else {
+    add(7, 6, 2, 1, "#8a4b45");
+  }
+
+  // 100% crown badge.
+  add(5, 0, 1, 1, GOLD);
+  add(7, 0, 1, 1, "#fff2a8");
+  add(9, 0, 1, 1, GOLD);
+  add(10, 1, 1, 1, GOLD);
+  add(5, 1, 5, 1, GOLD);
+
+  return px;
+}
+
 const SPECIAL_LABELS: Record<string, string> = {
   angel: "Celestial Healer",
   devil: "Shadow Surgeon",
   phoenix: "Phoenix Reborn",
   void: "Cosmic Wanderer",
   titan: "Golden Titan",
+  professor: "Perfect Exam Professor",
 };
 
 function auraStops(special: string) {
@@ -705,6 +815,8 @@ function auraStops(special: string) {
       return { c1: "#c026d3", c2: "#5b2ea8", c3: "#0a0518", o1: 0.75, o2: 0.45, blend: "screen" };
     case "titan":
       return { c1: "#fff2a8", c2: "#f2c94c", c3: "#b8860b", o1: 0.85, o2: 0.4, blend: "screen" };
+    case "professor":
+      return { c1: "#8cc7ff", c2: "#1f68b3", c3: "#182338", o1: 0.8, o2: 0.45, blend: "screen" };
     default:
       return { c1: "#fff", c2: "#fff", c3: "#fff", o1: 0, o2: 0, blend: "normal" };
   }
@@ -733,6 +845,7 @@ export function Companion({
     if (special === "phoenix") return buildPhoenix(mood);
     if (special === "void") return buildVoid(mood);
     if (special === "titan") return buildTitan(mood);
+    if (special === "professor") return buildProfessor(mood);
     return buildPixels(level, mood, character);
   }, [level, mood, character, special]);
 
@@ -834,6 +947,16 @@ export function Companion({
           <rect x={17} y={2} width={1} height={1} fill="#fff2a8" opacity="0.95" />
           <rect x={-2} y={7} width={1} height={1} fill="#f2c94c" opacity="0.9" />
           <rect x={17} y={7} width={1} height={1} fill="#f2c94c" opacity="0.9" />
+        </>
+      )}
+      {special === "professor" && (
+        <>
+          <rect x={-1} y={1} width={1} height={1} fill="#8cc7ff" opacity="0.9" />
+          <rect x={17} y={1} width={1} height={1} fill="#8cc7ff" opacity="0.9" />
+          <rect x={-2} y={9} width={1} height={1} fill="#f59e0b" opacity="0.9" />
+          <rect x={17} y={10} width={1} height={1} fill="#06b6d4" opacity="0.9" />
+          <rect x={3} y={17} width={1} height={1} fill="#dc2626" opacity="0.9" />
+          <rect x={12} y={17} width={1} height={1} fill="#174eb6" opacity="0.9" />
         </>
       )}
     </svg>

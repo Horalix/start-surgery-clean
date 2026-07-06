@@ -101,6 +101,7 @@ export type Database = {
           host_user_id: string
           id: string
           mode: string
+          player_user_ids: string[]
           question_ids: string[]
           started_at: string | null
           status: string
@@ -112,6 +113,7 @@ export type Database = {
           host_user_id: string
           id?: string
           mode: string
+          player_user_ids?: string[]
           question_ids: string[]
           started_at?: string | null
           status?: string
@@ -123,6 +125,7 @@ export type Database = {
           host_user_id?: string
           id?: string
           mode?: string
+          player_user_ids?: string[]
           question_ids?: string[]
           started_at?: string | null
           status?: string
@@ -167,6 +170,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          best_exam_score: number
           character: Json
           created_at: string
           display_name: string
@@ -174,6 +178,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          best_exam_score?: number
           character?: Json
           created_at?: string
           display_name?: string
@@ -181,6 +186,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          best_exam_score?: number
           character?: Json
           created_at?: string
           display_name?: string

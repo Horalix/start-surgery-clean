@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ClipboardCheck,
@@ -23,6 +24,7 @@ import { Companion } from "@/components/study/Companion";
 import { levelProgress } from "@/lib/study/companion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { syncExamAttempt } from "@/lib/study/exam.functions";
 
 export const Route = createFileRoute("/exam")({ component: ExamPage });
 
@@ -193,6 +195,7 @@ function ExamRunner({
   const [remaining, setRemaining] = useState(minutes * 60);
   const [confirming, setConfirming] = useState(false);
   const startRef = useRef(Date.now());
+  const syncExam = useServerFn(syncExamAttempt);
 
   const q = EXAM_QUESTIONS[cur];
   const a = answers[q.examNo!] ?? { selected: [], confidence: null, review: false };
@@ -231,8 +234,13 @@ function ExamRunner({
         confidence: i.confidence,
       })),
     });
+    void syncExam({
+      data: {
+        answers: items.map((item) => ({ examNo: item.examNo, selected: item.selected })),
+      },
+    });
     onFinish();
-  }, [answers, timed, onFinish]);
+  }, [answers, timed, onFinish, syncExam]);
 
   // timer
   useEffect(() => {

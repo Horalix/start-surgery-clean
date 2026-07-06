@@ -79,6 +79,11 @@ function generateCode(): string {
   return out;
 }
 
+function safeDisplayName(name: string): string {
+  const clean = name.trim() || "Player";
+  return clean.slice(0, 40);
+}
+
 function pickQuestionIds(): string[] {
   const shuffled = [...EXAM_QUESTIONS].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, BATTLE_SIZE).map((q) => q.id);
@@ -102,12 +107,12 @@ function BattlePage() {
       if (data.user) {
         setUserId(data.user.id);
         const meta = data.user.user_metadata as { display_name?: string; full_name?: string };
-        setDisplayName(
+        setDisplayName(safeDisplayName(
           meta.display_name ||
             meta.full_name ||
             data.user.email?.split("@")[0] ||
             "Player",
-        );
+        ));
       }
       setAuthChecked(true);
     });
@@ -203,6 +208,7 @@ function Lobby({
           code,
           host_user_id: userId,
           mode,
+          status: "waiting",
           question_ids: pickQuestionIds(),
         })
         .select("id")
@@ -210,19 +216,20 @@ function Lobby({
       if (error) {
         console.error("[battle] host room insert failed:", error);
         const err = error as { message?: string; details?: string; hint?: string; code?: string };
-        throw new Error(err.message || err.details || err.hint || "Insert failed");
+        throw new Error(err.message || err.details || err.hint || "Room creation was blocked");
       }
       const room = data as { id: string };
       const { error: joinErr } = await db.from("battle_players").insert({
         room_id: room.id,
         user_id: userId,
-        display_name: displayName,
+        display_name: safeDisplayName(displayName),
       });
       if (joinErr) {
         console.error("[battle] host self-join failed:", joinErr);
         const err = joinErr as { message?: string; details?: string; hint?: string };
         throw new Error(err.message || err.details || err.hint || "Failed to join own room");
       }
+      toast.success(`Room ${code} created`);
       onEnter(room.id);
     } catch (e) {
       console.error("[battle] host() error:", e);
@@ -254,7 +261,7 @@ function Lobby({
           {
             room_id: room.id,
             user_id: userId,
-            display_name: displayName,
+            display_name: safeDisplayName(displayName),
           },
           { onConflict: "room_id,user_id" },
         );
