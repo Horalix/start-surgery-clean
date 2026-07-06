@@ -177,24 +177,45 @@ export type Database = {
           character: Json
           created_at: string
           display_name: string
+          mastered_count: number
+          seen_count: number
+          study_accuracy: number
+          study_level: number
+          study_score: number
+          study_updated_at: string
           updated_at: string
           user_id: string
+          xp: number
         }
         Insert: {
           best_exam_score?: number
           character?: Json
           created_at?: string
           display_name?: string
+          mastered_count?: number
+          seen_count?: number
+          study_accuracy?: number
+          study_level?: number
+          study_score?: number
+          study_updated_at?: string
           updated_at?: string
           user_id: string
+          xp?: number
         }
         Update: {
           best_exam_score?: number
           character?: Json
           created_at?: string
           display_name?: string
+          mastered_count?: number
+          seen_count?: number
+          study_accuracy?: number
+          study_level?: number
+          study_score?: number
+          study_updated_at?: string
           updated_at?: string
           user_id?: string
+          xp?: number
         }
         Relationships: []
       }
