@@ -201,7 +201,12 @@ export type Database = {
         Args: { _room_id: string; _user_id: string }
         Returns: boolean
       }
+      is_battle_room_waiting: { Args: { _room_id: string }; Returns: boolean }
       is_battle_waiting: { Args: { _room_id: string }; Returns: boolean }
+      is_current_battle_participant: {
+        Args: { _room_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
