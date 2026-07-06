@@ -58,7 +58,9 @@ interface Player {
   correct_count: number;
   total_ms: number;
   joined_at: string;
+  character: CharacterCustomization | null;
 }
+
 
 interface AnswerRow {
   id: string;
