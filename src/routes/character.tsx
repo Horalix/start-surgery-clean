@@ -64,11 +64,21 @@ function CharacterPage() {
   const [draft, setDraft] = useState<CharacterCustomization>(saved ?? {});
   const [savingCloud, setSavingCloud] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
+  const [verifiedBestExamScore, setVerifiedBestExamScore] = useState<number | null>(null);
 
   useEffect(() => setDraft(saved ?? {}), [saved]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    supabase.auth.getUser().then(async ({ data }) => {
+      setEmail(data.user?.email ?? null);
+      if (!data.user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("best_exam_score")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+      setVerifiedBestExamScore(profile?.best_exam_score ?? 0);
+    });
   }, []);
 
   const nameLc = (profileName ?? "").trim().toLowerCase();
@@ -77,7 +87,8 @@ function CharacterPage() {
   const canDevil = DEVIL_EMAILS.includes(emailLc) || DEVIL_NAMES.some((n) => nameLc.includes(n));
   const canShared =
     SHARED_EMAILS.includes(emailLc) || SHARED_NAMES.some((n) => nameLc.includes(n));
-  const hasPerfectExam = (bestExamScore ?? 0) >= 74;
+  const displayBestExamScore = Math.max(bestExamScore ?? 0, verifiedBestExamScore ?? 0);
+  const hasPerfectExam = (verifiedBestExamScore ?? 0) >= 74;
 
   const availableSpecials = SPECIAL_FORMS.filter((f) => {
     if (f.key === "angel") return canAngel;
@@ -115,7 +126,7 @@ function CharacterPage() {
               user_id: data.user.id,
               display_name: displayName,
               character: draft as never,
-              best_exam_score: bestExamScore ?? 0,
+              best_exam_score: verifiedBestExamScore ?? 0,
             } as never,
             { onConflict: "user_id" },
           );
@@ -297,7 +308,7 @@ function CharacterPage() {
                 <div className="min-w-0">
                   <div className="text-sm font-bold">Professor · 100% Exam Boss</div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Locked until you score 74/74 on Exam Simulation. Best score: {bestExamScore ?? 0}/74.
+                    Locked until you score 74/74 on Exam Simulation. Best score: {displayBestExamScore}/74.
                   </p>
                 </div>
               </div>
