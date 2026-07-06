@@ -197,7 +197,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_battle_participant: {
+        Args: { _room_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_battle_waiting: { Args: { _room_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
