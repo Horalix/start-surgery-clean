@@ -73,15 +73,7 @@ export interface Settings {
 }
 
 export type SpecialCharacter =
-  | "angel"
-  | "devil"
-  | "phoenix"
-  | "void"
-  | "titan"
-  | "professor"
-  | "reaper"
-  | "oracle"
-  | "samurai";
+  "angel" | "devil" | "phoenix" | "void" | "titan" | "professor" | "reaper" | "oracle" | "samurai";
 
 export interface CharacterCustomization {
   palette?: Partial<{

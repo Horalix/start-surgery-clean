@@ -103,10 +103,15 @@ function buildPixels(level: number, mood: CompanionMood, character?: CharacterCu
 function buildAngelT1(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#ffe6cc", SKIN_S = "#e9c9a7";
-  const HAIR = "#f6d874", HAIR_L = "#fff2b0";
-  const ROBE = "#ffffff", ROBE_S = "#e6ecf5";
-  const GOLD = "#f2c94c", GOLD_D = "#b8860b", GOLD_L = "#fff2a8";
+  const SKIN = "#ffe6cc",
+    SKIN_S = "#e9c9a7";
+  const HAIR = "#f6d874",
+    HAIR_L = "#fff2b0";
+  const ROBE = "#ffffff",
+    ROBE_S = "#e6ecf5";
+  const GOLD = "#f2c94c",
+    GOLD_D = "#b8860b",
+    GOLD_L = "#fff2a8";
   const HALO = "#fff29a";
   const LIP = "#c97a7a";
 
@@ -195,7 +200,10 @@ function buildAngelT1(mood: CompanionMood): Px[] {
 function buildAngelT2(mood: CompanionMood): Px[] {
   const px = buildAngelT1(mood);
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const GOLD_L = "#fff2a8", GOLD = "#f2c94c", CYAN = "#a0e3ff", WHITE = "#ffffff";
+  const GOLD_L = "#fff2a8",
+    GOLD = "#f2c94c",
+    CYAN = "#a0e3ff",
+    WHITE = "#ffffff";
   // Upper wing pair (outstretched further)
   add(-1, 2, 1, 3, GOLD_L);
   add(0, 1, 1, 4, WHITE);
@@ -225,7 +233,9 @@ function buildAngelT2(mood: CompanionMood): Px[] {
 function buildAngelT3(mood: CompanionMood): Px[] {
   const px = buildAngelT2(mood);
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const GOLD = "#f2c94c", GOLD_L = "#fff2a8", GOLD_D = "#b8860b";
+  const GOLD = "#f2c94c",
+    GOLD_L = "#fff2a8",
+    GOLD_D = "#b8860b";
   const STEEL = "#e8ecf2";
   // Golden pauldrons + breastplate overlay
   add(3, 8, 2, 1, GOLD);
@@ -256,11 +266,16 @@ function buildAngelT3(mood: CompanionMood): Px[] {
 function buildDevilT1(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#c98a7a", SKIN_S = "#8f5b52";
-  const ROBE = "#2b0f14", ROBE_L = "#4a1520";
-  const CRIMSON = "#c9302c", CRIMSON_D = "#7a1a1a", CRIMSON_L = "#ff6b5c";
+  const SKIN = "#c98a7a",
+    SKIN_S = "#8f5b52";
+  const ROBE = "#2b0f14",
+    ROBE_L = "#4a1520";
+  const CRIMSON = "#c9302c",
+    CRIMSON_D = "#7a1a1a",
+    CRIMSON_L = "#ff6b5c";
   const BLACK = "#0d0608";
-  const HORN = "#3a1a1a", HORN_L = "#7a2a2a";
+  const HORN = "#3a1a1a",
+    HORN_L = "#7a2a2a";
   const EYE_GLOW = "#ff2a2a";
   const GOLD = "#c9a24a";
 
@@ -366,7 +381,10 @@ function buildDevilT1(mood: CompanionMood): Px[] {
 function buildDevilT2(mood: CompanionMood): Px[] {
   const px = buildDevilT1(mood);
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const EMBER = "#ffb147", CRIMSON_L = "#ff6b5c", CRIMSON = "#c9302c", HORN_L = "#7a2a2a";
+  const EMBER = "#ffb147",
+    CRIMSON_L = "#ff6b5c",
+    CRIMSON = "#c9302c",
+    HORN_L = "#7a2a2a";
   // Larger, curled horns
   add(3, -1, 1, 1, HORN_L);
   add(12, -1, 1, 1, HORN_L);
@@ -392,7 +410,10 @@ function buildDevilT2(mood: CompanionMood): Px[] {
 function buildDevilT3(mood: CompanionMood): Px[] {
   const px = buildDevilT2(mood);
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const CRIMSON = "#c9302c", CRIMSON_L = "#ff6b5c", EMBER = "#ffb147", GOLD = "#c9a24a";
+  const CRIMSON = "#c9302c",
+    CRIMSON_L = "#ff6b5c",
+    EMBER = "#ffb147",
+    GOLD = "#c9a24a";
   const BLACK = "#0d0608";
   // Massive extended wing spans
   add(-2, 4, 1, 8, BLACK);
@@ -423,10 +444,15 @@ function buildDevilT3(mood: CompanionMood): Px[] {
 function buildPhoenix(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#ffd6a5", SKIN_S = "#c98a5a";
-  const FIRE_D = "#7a1500", FIRE = "#e63900", FIRE_L = "#ff7a1a";
-  const EMBER = "#ffd23a", WHITE_HOT = "#fff2a8";
-  const ROBE = "#2a0a0a", GOLD = "#ffb800";
+  const SKIN = "#ffd6a5",
+    SKIN_S = "#c98a5a";
+  const FIRE_D = "#7a1500",
+    FIRE = "#e63900",
+    FIRE_L = "#ff7a1a";
+  const EMBER = "#ffd23a",
+    WHITE_HOT = "#fff2a8";
+  const ROBE = "#2a0a0a",
+    GOLD = "#ffb800";
 
   add(-1, 6, 1, 2, FIRE_D);
   add(0, 5, 1, 5, FIRE_D);
@@ -505,10 +531,16 @@ function buildPhoenix(mood: CompanionMood): Px[] {
 function buildVoid(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#a68eb8", SKIN_S = "#5f3f7a";
-  const ROBE = "#0a0518", ROBE_L = "#1a0f3d";
-  const PURPLE = "#5b2ea8", PURPLE_L = "#8b5cf6", MAGENTA = "#c026d3", CYAN = "#22d3ee";
-  const STAR = "#ffffff", GOLD = "#e0a63a";
+  const SKIN = "#a68eb8",
+    SKIN_S = "#5f3f7a";
+  const ROBE = "#0a0518",
+    ROBE_L = "#1a0f3d";
+  const PURPLE = "#5b2ea8",
+    PURPLE_L = "#8b5cf6",
+    MAGENTA = "#c026d3",
+    CYAN = "#22d3ee";
+  const STAR = "#ffffff",
+    GOLD = "#e0a63a";
 
   add(0, 4, 1, 9, ROBE_L);
   add(1, 3, 1, 11, PURPLE);
@@ -586,10 +618,17 @@ function buildVoid(mood: CompanionMood): Px[] {
 function buildTitan(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#f0c9a4", SKIN_S = "#b78862";
-  const GOLD = "#f2c94c", GOLD_D = "#b8860b", GOLD_L = "#fff2a8";
-  const BRONZE = "#c17817", ARMOR = "#d4a017", ARMOR_D = "#7a5010";
-  const CAPE = "#7a1a1a", CAPE_D = "#3d0a0a", HAIR = "#c9924a";
+  const SKIN = "#f0c9a4",
+    SKIN_S = "#b78862";
+  const GOLD = "#f2c94c",
+    GOLD_D = "#b8860b",
+    GOLD_L = "#fff2a8";
+  const BRONZE = "#c17817",
+    ARMOR = "#d4a017",
+    ARMOR_D = "#7a5010";
+  const CAPE = "#7a1a1a",
+    CAPE_D = "#3d0a0a",
+    HAIR = "#c9924a";
 
   add(2, 3, 1, 1, GOLD);
   add(1, 4, 1, 1, GOLD_D);
@@ -675,11 +714,20 @@ function buildTitan(mood: CompanionMood): Px[] {
 function buildProfessor(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#f0c9a4", SKIN_S = "#c8956f";
-  const HAIR = "#d7dbe0", HAIR_D = "#9aa3ad";
-  const BLAZER = "#182338", BLAZER_L = "#263a5c", CHECK = "#6f7b91", SHIRT = "#dbeafe";
-  const MIC_BLUE = "#174eb6", MIC_ORANGE = "#f59e0b", MIC_RED = "#dc2626", MIC_CYAN = "#06b6d4";
-  const GOLD = "#f2c94c", BACKDROP = "#1f68b3";
+  const SKIN = "#f0c9a4",
+    SKIN_S = "#c8956f";
+  const HAIR = "#d7dbe0",
+    HAIR_D = "#9aa3ad";
+  const BLAZER = "#182338",
+    BLAZER_L = "#263a5c",
+    CHECK = "#6f7b91",
+    SHIRT = "#dbeafe";
+  const MIC_BLUE = "#174eb6",
+    MIC_ORANGE = "#f59e0b",
+    MIC_RED = "#dc2626",
+    MIC_CYAN = "#06b6d4";
+  const GOLD = "#f2c94c",
+    BACKDROP = "#1f68b3";
 
   add(-1, 3, 1, 9, BACKDROP);
   add(16, 3, 1, 9, BACKDROP);
@@ -760,10 +808,16 @@ function buildProfessor(mood: CompanionMood): Px[] {
 function buildReaper(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const OBSIDIAN = "#050308", ROBE = "#0d0812", ROBE_L = "#1a0f2a";
-  const VIOLET = "#8b3af8", VIOLET_L = "#c78cff", VIOLET_D = "#4a1a8a";
-  const SMOKE = "#2a1a3f", SMOKE_L = "#4a2a5f";
-  const BONE = "#e8e4d8", BONE_D = "#8f8a7a";
+  const OBSIDIAN = "#050308",
+    ROBE = "#0d0812",
+    ROBE_L = "#1a0f2a";
+  const VIOLET = "#8b3af8",
+    VIOLET_L = "#c78cff",
+    VIOLET_D = "#4a1a8a";
+  const SMOKE = "#2a1a3f",
+    SMOKE_L = "#4a2a5f";
+  const BONE = "#e8e4d8",
+    BONE_D = "#8f8a7a";
   const EYE = "#ff2f4a";
   const SILVER = "#c0c8d4";
 
@@ -843,13 +897,21 @@ function buildReaper(mood: CompanionMood): Px[] {
 function buildOracle(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#f8e0c2", SKIN_S = "#c9a682";
-  const HAIR = "#f7f1de", HAIR_L = "#fffbee";
-  const ROBE = "#f8f4e8", ROBE_S = "#e0d7b8";
-  const GOLD = "#e8b840", GOLD_L = "#ffe088", GOLD_D = "#8f6a1a";
-  const CYAN = "#7fd8ff", CYAN_L = "#c2edff";
-  const STAR = "#ffffff", TEAL = "#3fb9c8";
-  const LILAC = "#c7a8ff", AURORA = "#8fd4b3";
+  const SKIN = "#f8e0c2",
+    SKIN_S = "#c9a682";
+  const HAIR = "#f7f1de",
+    HAIR_L = "#fffbee";
+  const ROBE = "#f8f4e8",
+    ROBE_S = "#e0d7b8";
+  const GOLD = "#e8b840",
+    GOLD_L = "#ffe088",
+    GOLD_D = "#8f6a1a";
+  const CYAN = "#7fd8ff",
+    CYAN_L = "#c2edff";
+  const STAR = "#ffffff",
+    TEAL = "#3fb9c8";
+  const LILAC = "#c7a8ff",
+    AURORA = "#8fd4b3";
 
   // Aurora aura background
   add(-1, 2, 1, 6, AURORA);
@@ -932,12 +994,20 @@ function buildOracle(mood: CompanionMood): Px[] {
 function buildSamurai(mood: CompanionMood): Px[] {
   const px: Px[] = [];
   const add = (x: number, y: number, w: number, h: number, c: string) => px.push({ x, y, w, h, c });
-  const SKIN = "#e6b790", SKIN_S = "#8a6552";
-  const PLATE = "#1a2432", PLATE_L = "#2d3f5a", PLATE_D = "#0a1018";
-  const NEON = "#22e8f0", NEON_D = "#0aa8b8", NEON_L = "#a8fdff";
-  const HOLO = "#ff5ac9", HOLO_L = "#ffb3e8";
+  const SKIN = "#e6b790",
+    SKIN_S = "#8a6552";
+  const PLATE = "#1a2432",
+    PLATE_L = "#2d3f5a",
+    PLATE_D = "#0a1018";
+  const NEON = "#22e8f0",
+    NEON_D = "#0aa8b8",
+    NEON_L = "#a8fdff";
+  const HOLO = "#ff5ac9",
+    HOLO_L = "#ffb3e8";
   const CIRCUIT = "#3affd4";
-  const BLADE = "#b6f7ff", BLADE_D = "#4fb7c0", BLADE_L = "#e8fbff";
+  const BLADE = "#b6f7ff",
+    BLADE_D = "#4fb7c0",
+    BLADE_L = "#e8fbff";
   const HAIR = "#111318";
 
   // Neon backdrop stripes
@@ -1131,11 +1201,20 @@ export function Companion({
       width={size}
       height={size * (aspectH / aspectW)}
       shapeRendering="crispEdges"
+      style={
+        special && aura
+          ? {
+              filter: `drop-shadow(0 0 ${Math.max(2, size * 0.05)}px ${aura.c1}) drop-shadow(0 0 ${Math.max(4, size * 0.1)}px ${aura.c2})`,
+              overflow: "visible",
+            }
+          : undefined
+      }
       className={cn("pixelated select-none companion-root", moodClass, className)}
       role="img"
       aria-label={
         special
-          ? SPECIAL_LABELS[special] + (tier > 1 && (special === "angel" || special === "devil") ? ` — Tier ${tier}` : "")
+          ? SPECIAL_LABELS[special] +
+            (tier > 1 && (special === "angel" || special === "devil") ? ` — Tier ${tier}` : "")
           : `Study companion, level ${level}`
       }
     >
@@ -1143,7 +1222,12 @@ export function Companion({
         <defs>
           <radialGradient id={auraId}>
             <stop offset="0%" stopColor={aura.c1} stopOpacity={aura.o1}>
-              <animate attributeName="stop-opacity" values={`${aura.o1};${aura.o1 * 0.55};${aura.o1}`} dur="2.4s" repeatCount="indefinite" />
+              <animate
+                attributeName="stop-opacity"
+                values={`${aura.o1};${aura.o1 * 0.55};${aura.o1}`}
+                dur="2.4s"
+                repeatCount="indefinite"
+              />
             </stop>
             <stop offset="60%" stopColor={aura.c2} stopOpacity={aura.o2} />
             <stop offset="100%" stopColor={aura.c3} stopOpacity="0" />

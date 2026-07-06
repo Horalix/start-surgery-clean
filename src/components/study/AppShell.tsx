@@ -48,7 +48,6 @@ const NAV: NavItem[] = [
   { to: "/character", label: "Character", icon: UserCog },
 ];
 
-
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex flex-col gap-1">
@@ -212,7 +211,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-background">

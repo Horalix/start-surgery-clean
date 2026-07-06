@@ -10,7 +10,6 @@ import type {
 } from "./types";
 import { emptyProgress, schedule } from "./srs";
 
-
 const KEY = "surgery1-mastery-v1";
 const VERSION = 1;
 

@@ -81,32 +81,40 @@ function Today() {
     prevXpRef.current = xp;
   }, [xp]);
 
-
   return (
     <div className="space-y-6">
       {/* Hero */}
       <div className="overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-card p-5 shadow-sm sm:p-7">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className={cn(
-              "relative flex size-24 shrink-0 items-center justify-center rounded-2xl bg-background/70 shadow-inner",
-              burst && "companion-levelup",
-            )}>
-              <Companion level={lp.level} size={80} character={resolvedCharacter} mood={burst ? "happy" : "idle"} />
+            <div
+              className={cn(
+                "relative flex size-24 shrink-0 items-center justify-center rounded-2xl bg-background/70 shadow-inner",
+                burst && "companion-levelup",
+              )}
+            >
+              <Companion
+                level={lp.level}
+                size={80}
+                character={resolvedCharacter}
+                mood={burst ? "happy" : "idle"}
+              />
               {burst && (
                 <>
-                  {["#f2c94c","#22d3ee","#ff5ac9","#a8fdff","#c78cff","#ffd23a"].map((c, i) => (
-                    <span
-                      key={i}
-                      className="confetti-piece"
-                      style={{
-                        left: `${10 + i * 14}%`,
-                        top: "0",
-                        background: c,
-                        animationDelay: `${i * 0.08}s`,
-                      }}
-                    />
-                  ))}
+                  {["#f2c94c", "#22d3ee", "#ff5ac9", "#a8fdff", "#c78cff", "#ffd23a"].map(
+                    (c, i) => (
+                      <span
+                        key={i}
+                        className="confetti-piece"
+                        style={{
+                          left: `${10 + i * 14}%`,
+                          top: "0",
+                          background: c,
+                          animationDelay: `${i * 0.08}s`,
+                        }}
+                      />
+                    ),
+                  )}
                 </>
               )}
             </div>
@@ -118,8 +126,19 @@ function Today() {
                 Let's master the Surgery I final
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {stage.title} · <span className={cn("font-semibold text-foreground", xpPulse && "xp-pulse inline-block")}>Level {lp.level}</span>
-                <span className="text-muted-foreground/70"> · {lp.into}/{lp.need} XP</span>
+                {stage.title} ·{" "}
+                <span
+                  className={cn(
+                    "font-semibold text-foreground",
+                    xpPulse && "xp-pulse inline-block",
+                  )}
+                >
+                  Level {lp.level}
+                </span>
+                <span className="text-muted-foreground/70">
+                  {" "}
+                  · {lp.into}/{lp.need} XP
+                </span>
                 {next && (
                   <span className="text-muted-foreground/70">
                     {" "}
@@ -135,7 +154,6 @@ function Today() {
               </div>
             </div>
           </div>
-
 
           <div className="flex items-center gap-4">
             <Ring

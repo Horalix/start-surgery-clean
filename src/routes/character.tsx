@@ -16,7 +16,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/character")({ component: CharacterPage });
 
 const SKIN = ["#f0c9a4", "#e9bd97", "#e3b48c", "#c48a63", "#8a5a3b", "#5a3b28"];
-const HAIR = ["#7a4a2b", "#5a3720", "#3f2717", "#2c1a10", "#cfcfd6", "#d9a441", "#c94b4b", "#4a2ea8"];
+const HAIR = [
+  "#7a4a2b",
+  "#5a3720",
+  "#3f2717",
+  "#2c1a10",
+  "#cfcfd6",
+  "#d9a441",
+  "#c94b4b",
+  "#4a2ea8",
+];
 const SCRUB_SETS: { name: string; scrub: string; scrubDark: string }[] = [
   { name: "Teal", scrub: "#8fd3c6", scrubDark: "#5cb3a4" },
   { name: "Sky", scrub: "#6fc3e6", scrubDark: "#3f9dc7" },
@@ -46,13 +55,62 @@ const OWNER_NAMES = ["kerim", "amrudin"];
 
 type Special = NonNullable<CharacterCustomization["special"]>;
 
-const LEGENDARY: { key: Special; emoji: string; label: string; sub: string }[] = [
-  { key: "phoenix", emoji: "🔥", label: "Phoenix", sub: "Reborn in Flame" },
-  { key: "void", emoji: "🌌", label: "Void", sub: "Cosmic Wanderer" },
-  { key: "titan", emoji: "⚔️", label: "Titan", sub: "Golden Warrior" },
-  { key: "reaper", emoji: "🗡️", label: "Shadow Reaper", sub: "Violet Scythe" },
-  { key: "oracle", emoji: "🔮", label: "Celestial Oracle", sub: "Runic Halo" },
-  { key: "samurai", emoji: "🤖", label: "Cyber Samurai", sub: "Neon Blade" },
+const LEGENDARY: {
+  key: Special;
+  emoji: string;
+  label: string;
+  sub: string;
+  rarity: string;
+  ring: [string, string, string];
+}[] = [
+  {
+    key: "phoenix",
+    emoji: "🔥",
+    label: "Phoenix",
+    sub: "Reborn in Flame",
+    rarity: "Mythic",
+    ring: ["#ffd23a", "#ff7a1a", "#e63900"],
+  },
+  {
+    key: "void",
+    emoji: "🌌",
+    label: "Void Walker",
+    sub: "Cosmic Wanderer",
+    rarity: "Mythic",
+    ring: ["#22d3ee", "#c026d3", "#5b2ea8"],
+  },
+  {
+    key: "titan",
+    emoji: "⚔️",
+    label: "Golden Titan",
+    sub: "Aegis Warrior",
+    rarity: "Legendary",
+    ring: ["#fff2a8", "#f2c94c", "#b8860b"],
+  },
+  {
+    key: "reaper",
+    emoji: "🗡️",
+    label: "Shadow Reaper",
+    sub: "Violet Scythe",
+    rarity: "Legendary",
+    ring: ["#c78cff", "#8b3af8", "#ff2f4a"],
+  },
+  {
+    key: "oracle",
+    emoji: "🔮",
+    label: "Celestial Oracle",
+    sub: "Runic Halo",
+    rarity: "Legendary",
+    ring: ["#c2edff", "#8fd4b3", "#c7a8ff"],
+  },
+  {
+    key: "samurai",
+    emoji: "🤖",
+    label: "Cyber Samurai",
+    sub: "Neon Blade",
+    rarity: "Legendary",
+    ring: ["#22e8f0", "#ff5ac9", "#a8fdff"],
+  },
 ];
 
 function CharacterPage() {
@@ -118,17 +176,15 @@ function CharacterPage() {
         const meta = data.user.user_metadata as { display_name?: string; full_name?: string };
         const displayName =
           meta.display_name || meta.full_name || data.user.email?.split("@")[0] || "Player";
-        await supabase
-          .from("profiles")
-          .upsert(
-            {
-              user_id: data.user.id,
-              display_name: displayName,
-              character: withTier as never,
-              best_exam_score: verifiedBestExamScore ?? 0,
-            } as never,
-            { onConflict: "user_id" },
-          );
+        await supabase.from("profiles").upsert(
+          {
+            user_id: data.user.id,
+            display_name: displayName,
+            character: withTier as never,
+            best_exam_score: verifiedBestExamScore ?? 0,
+          } as never,
+          { onConflict: "user_id" },
+        );
       }
     } catch {
       /* ignore cloud sync errors */
@@ -148,20 +204,30 @@ function CharacterPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <section className="rounded-2xl border bg-card p-6 shadow-sm">
+        <section className="rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-20 lg:self-start">
           <div className="flex flex-col items-center gap-3">
-            <div className="flex size-40 items-center justify-center rounded-2xl bg-primary/10">
+            <div
+              className={cn(
+                "relative flex size-40 items-center justify-center overflow-hidden rounded-2xl",
+                previewCharacter?.special
+                  ? "bg-gradient-to-br from-slate-900 via-indigo-950 to-black shadow-inner"
+                  : "bg-primary/10",
+              )}
+            >
+              {previewCharacter?.special && (
+                <span className="aura-pulse absolute inset-4 rounded-full bg-primary/20 blur-2xl" />
+              )}
               <Companion level={lp.level} size={140} character={previewCharacter} />
             </div>
             <div className="text-center">
               <div className="text-sm font-semibold">
                 {previewCharacter?.special
-                  ? previewCharacter.special.charAt(0).toUpperCase() + previewCharacter.special.slice(1)
+                  ? previewCharacter.special.charAt(0).toUpperCase() +
+                    previewCharacter.special.slice(1)
                   : stage.title}
-                {(previewCharacter?.special === "angel" || previewCharacter?.special === "devil") && (
-                  <span className="ml-1 text-primary">
-                    · Tier {previewCharacter.tier ?? 1}
-                  </span>
+                {(previewCharacter?.special === "angel" ||
+                  previewCharacter?.special === "devil") && (
+                  <span className="ml-1 text-primary">· Tier {previewCharacter.tier ?? 1}</span>
                 )}
               </div>
               <div className="text-xs text-muted-foreground">Level {lp.level}</div>
@@ -196,22 +262,35 @@ function CharacterPage() {
                       key={t}
                       className={cn(
                         "flex flex-col items-center gap-1 rounded-xl border-2 p-2",
-                        unlocked ? "border-primary bg-primary/10" : "border-border opacity-60 grayscale",
+                        unlocked
+                          ? "border-primary bg-primary/10"
+                          : "border-border opacity-60 grayscale",
                       )}
                     >
                       <div className="flex size-16 items-center justify-center">
                         <Companion
                           level={lp.level}
                           size={56}
-                          character={{ special: canAngel ? "angel" : "devil", tier: t as 1 | 2 | 3 }}
+                          character={{
+                            special: canAngel ? "angel" : "devil",
+                            tier: t as 1 | 2 | 3,
+                          }}
                           bob={false}
                         />
                       </div>
                       <div className="text-xs font-bold">Tier {t}</div>
                       <div className="text-[10px] text-muted-foreground">
                         {canAngel
-                          ? t === 1 ? "Cherub" : t === 2 ? "Seraph" : "Archangel"
-                          : t === 1 ? "Imp" : t === 2 ? "Fiend" : "Archdemon"}
+                          ? t === 1
+                            ? "Cherub"
+                            : t === 2
+                              ? "Seraph"
+                              : "Archangel"
+                          : t === 1
+                            ? "Imp"
+                            : t === 2
+                              ? "Fiend"
+                              : "Archdemon"}
                       </div>
                     </div>
                   );
@@ -247,7 +326,9 @@ function CharacterPage() {
                     onClick={() => setSpecial("angel")}
                     className={cn(
                       "rounded-lg border-2 px-3 py-2 text-xs font-semibold",
-                      draft.special === "angel" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent",
+                      draft.special === "angel"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-accent",
                     )}
                   >
                     😇 Wear Angel form
@@ -258,7 +339,9 @@ function CharacterPage() {
                     onClick={() => setSpecial("devil")}
                     className={cn(
                       "rounded-lg border-2 px-3 py-2 text-xs font-semibold",
-                      draft.special === "devil" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent",
+                      draft.special === "devil"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-accent",
                     )}
                   >
                     😈 Wear Devil form
@@ -281,13 +364,23 @@ function CharacterPage() {
 
           <Group label="Skin tone">
             {SKIN.map((c) => (
-              <Swatch key={c} color={c} active={palette.skin === c} onClick={() => patchPalette({ skin: c })} />
+              <Swatch
+                key={c}
+                color={c}
+                active={palette.skin === c}
+                onClick={() => patchPalette({ skin: c })}
+              />
             ))}
           </Group>
 
           <Group label="Hair color">
             {HAIR.map((c) => (
-              <Swatch key={c} color={c} active={palette.hair === c} onClick={() => patchPalette({ hair: c })} />
+              <Swatch
+                key={c}
+                color={c}
+                active={palette.hair === c}
+                onClick={() => patchPalette({ hair: c })}
+              />
             ))}
           </Group>
 
@@ -305,7 +398,10 @@ function CharacterPage() {
                       active ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
                     )}
                   >
-                    <span className="size-4 rounded-sm border" style={{ backgroundColor: s.scrub }} />
+                    <span
+                      className="size-4 rounded-sm border"
+                      style={{ backgroundColor: s.scrub }}
+                    />
                     {s.name}
                   </button>
                 );
@@ -315,7 +411,12 @@ function CharacterPage() {
 
           <Group label="Accent">
             {ACCENT.map((c) => (
-              <Swatch key={c} color={c} active={palette.accent === c} onClick={() => patchPalette({ accent: c })} />
+              <Swatch
+                key={c}
+                color={c}
+                active={palette.accent === c}
+                onClick={() => patchPalette({ accent: c })}
+              />
             ))}
           </Group>
 
@@ -330,7 +431,9 @@ function CharacterPage() {
                     onClick={() => toggleProp(p.key)}
                     className={cn(
                       "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
-                      on ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent",
+                      on
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-accent",
                     )}
                   >
                     {on ? "✓ " : ""}
@@ -339,15 +442,25 @@ function CharacterPage() {
                 );
               })}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">Some gear also unlocks automatically as you level up.</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Some gear also unlocks automatically as you level up.
+            </p>
           </div>
 
           {/* Legendary unlocks — Kerim & Amrudin exclusive */}
           {isOwner && (
-            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4">
-              <Label className="mb-1 block text-sm font-semibold">✨ Legendary forms</Label>
-              <p className="mb-3 text-xs text-muted-foreground">
-                Six full custom skins. Everyone sees them in battle when you wear one.
+            <div className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-indigo-500/10 via-primary/5 to-fuchsia-500/10 p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <Label className="flex items-center gap-1.5 text-sm font-bold">
+                  <Sparkles className="size-4 text-primary" /> Legendary Vault
+                </Label>
+                <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                  Exclusive
+                </span>
+              </div>
+              <p className="mb-4 text-xs text-muted-foreground">
+                Full custom skins with live auras and particles. Everyone sees them on the
+                leaderboard and in battle when you equip one.
               </p>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {LEGENDARY.map((f) => {
@@ -357,17 +470,47 @@ function CharacterPage() {
                       key={f.key}
                       onClick={() => setSpecial(f.key)}
                       className={cn(
-                        "group flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all",
-                        active ? "border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30" : "border-border hover:bg-accent",
+                        "group relative flex flex-col items-center gap-2 overflow-hidden rounded-2xl border-2 p-3 text-center transition-all hover:-translate-y-0.5",
+                        active
+                          ? "legendary-ring border-transparent bg-background shadow-lg"
+                          : "border-border bg-card hover:border-primary/40",
                       )}
+                      style={
+                        {
+                          "--lg-a": f.ring[0],
+                          "--lg-b": f.ring[1],
+                          "--lg-c": f.ring[2],
+                        } as React.CSSProperties
+                      }
                     >
-                      <div className="flex size-16 items-center justify-center rounded-lg bg-background/60">
-                        <Companion level={lp.level} size={56} character={{ special: f.key }} bob={false} />
+                      <span className="absolute right-1.5 top-1.5 rounded-full bg-foreground/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-foreground/70">
+                        {f.rarity}
+                      </span>
+                      <div className="relative flex size-20 items-center justify-center">
+                        <span
+                          className="aura-pulse absolute inset-0 rounded-full blur-md"
+                          style={{
+                            background: `radial-gradient(circle, ${f.ring[0]}, ${f.ring[1]}00 70%)`,
+                          }}
+                        />
+                        <Companion
+                          level={lp.level}
+                          size={72}
+                          character={{ special: f.key }}
+                          bob={active}
+                        />
                       </div>
                       <div>
-                        <div className="text-xs font-bold leading-none">{f.emoji} {f.label}</div>
-                        <div className="mt-0.5 text-[10px] text-muted-foreground">{f.sub}</div>
+                        <div className="text-xs font-bold leading-none">{f.label}</div>
+                        <div className="mt-0.5 text-[10px] text-muted-foreground">
+                          {f.emoji} {f.sub}
+                        </div>
                       </div>
+                      {active && (
+                        <span className="rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                          Equipped
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -382,7 +525,12 @@ function CharacterPage() {
               </Label>
               <div className="flex items-center gap-4">
                 <div className="flex size-20 shrink-0 items-center justify-center rounded-xl bg-primary/10 opacity-70 grayscale">
-                  <Companion level={lp.level} size={70} character={{ special: "professor" }} bob={false} />
+                  <Companion
+                    level={lp.level}
+                    size={70}
+                    character={{ special: "professor" }}
+                    bob={false}
+                  />
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-bold">Professor · 100% Exam Boss</div>
@@ -405,7 +553,12 @@ function CharacterPage() {
                 )}
               >
                 <div className="flex size-14 items-center justify-center rounded-lg bg-background/60">
-                  <Companion level={lp.level} size={50} character={{ special: "professor" }} bob={false} />
+                  <Companion
+                    level={lp.level}
+                    size={50}
+                    character={{ special: "professor" }}
+                    bob={false}
+                  />
                 </div>
                 <span className="text-sm font-semibold">Wear Professor form</span>
               </button>
@@ -431,7 +584,10 @@ function MissionRow({
   return (
     <div>
       <div className="flex items-center justify-between text-xs">
-        <span className={cn("font-medium", done && "text-success")}>{done ? "✓ " : ""}{label}</span>
+        <span className={cn("font-medium", done && "text-success")}>
+          {done ? "✓ " : ""}
+          {label}
+        </span>
         <span className="tabular-nums text-muted-foreground">{progressLabel}</span>
       </div>
       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -453,7 +609,15 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Swatch({ color, active, onClick }: { color: string; active: boolean; onClick: () => void }) {
+function Swatch({
+  color,
+  active,
+  onClick,
+}: {
+  color: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}

@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { BarChart3, CheckCircle2, AlertTriangle, TrendingUp, ArrowRight, Zap, Trophy, Flame } from "lucide-react";
+import {
+  BarChart3,
+  CheckCircle2,
+  AlertTriangle,
+  TrendingUp,
+  ArrowRight,
+  Zap,
+  Trophy,
+  Flame,
+} from "lucide-react";
 import { getState, useStore } from "@/lib/study/store";
 import { readiness, topicStats, typeStats, mostLikelyToMiss } from "@/lib/study/selectors";
 import { TOPIC_BY_ID } from "@/data/topics";
@@ -25,7 +34,15 @@ function dailyXpSeries(state: AppState): { day: string; xp: number }[] {
   for (const p of Object.values(state.progress)) {
     for (const h of p.history) {
       const day = new Date(h.at).toISOString().slice(0, 10);
-      const gained = h.correct ? (h.confidence === "certain" ? 10 : h.confidence === "confident" ? 8 : h.confidence === "unsure" ? 6 : 4) : 1;
+      const gained = h.correct
+        ? h.confidence === "certain"
+          ? 10
+          : h.confidence === "confident"
+            ? 8
+            : h.confidence === "unsure"
+              ? 6
+              : 4
+        : 1;
       map.set(day, (map.get(day) ?? 0) + gained);
     }
   }
@@ -132,10 +149,18 @@ function AnalyticsPage() {
             <div className="text-3xl font-black tracking-tight">Level {lp.level}</div>
             <div className="mt-1 text-xs text-muted-foreground tabular-nums">
               {lp.into.toLocaleString()} / {lp.need.toLocaleString()} XP
-              {next && <> · {next.minLevel - lp.level} to {next.name}</>}
+              {next && (
+                <>
+                  {" "}
+                  · {next.minLevel - lp.level} to {next.name}
+                </>
+              )}
             </div>
             <div className="mt-2 h-2 w-56 max-w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${lp.pct}%` }} />
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${lp.pct}%` }}
+              />
             </div>
           </div>
         </div>
@@ -168,13 +193,43 @@ function AnalyticsPage() {
       {/* KPI grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Mastered" value={`${r.masteryPct}%`} hint="of 156" tone="success" />
-        <StatCard label="Recent accuracy" value={`${Math.round(r.recentAccuracy * 100)}%`} hint="last 40" icon={<TrendingUp className="size-4" />} />
-        <StatCard label="Best exam" value={bestExamScore ?? "—"} hint="/ 74" icon={<Trophy className="size-4" />} />
-        <StatCard label="Day streak" value={streak} hint={streak ? "keep it alive" : "start today"} tone={streak ? "primary" : "default"} icon={<Flame className="size-4" />} />
+        <StatCard
+          label="Recent accuracy"
+          value={`${Math.round(r.recentAccuracy * 100)}%`}
+          hint="last 40"
+          icon={<TrendingUp className="size-4" />}
+        />
+        <StatCard
+          label="Best exam"
+          value={bestExamScore ?? "—"}
+          hint="/ 74"
+          icon={<Trophy className="size-4" />}
+        />
+        <StatCard
+          label="Day streak"
+          value={streak}
+          hint={streak ? "keep it alive" : "start today"}
+          tone={streak ? "primary" : "default"}
+          icon={<Flame className="size-4" />}
+        />
         <StatCard label="Due now" value={r.dueCount} tone={r.dueCount ? "primary" : "success"} />
-        <StatCard label="Repeated misses" value={r.repeatedErrors} tone={r.repeatedErrors ? "danger" : "success"} />
-        <StatCard label="Confident errors" value={r.dangerous} hint="wrong while sure" tone={r.dangerous ? "danger" : "success"} />
-        <StatCard label="Battles" value={`${battlesWon}/${battlesPlayed}`} hint={`${winRate}% win rate`} icon={<Zap className="size-4" />} />
+        <StatCard
+          label="Repeated misses"
+          value={r.repeatedErrors}
+          tone={r.repeatedErrors ? "danger" : "success"}
+        />
+        <StatCard
+          label="Confident errors"
+          value={r.dangerous}
+          hint="wrong while sure"
+          tone={r.dangerous ? "danger" : "success"}
+        />
+        <StatCard
+          label="Battles"
+          value={`${battlesWon}/${battlesPlayed}`}
+          hint={`${winRate}% win rate`}
+          icon={<Zap className="size-4" />}
+        />
       </div>
 
       {/* XP over time + rolling accuracy */}
@@ -183,7 +238,10 @@ function AnalyticsPage() {
           {d.xpSeries.length === 0 ? (
             <Empty>Answer questions to start tracking XP over time.</Empty>
           ) : (
-            <BarChart data={d.xpSeries.map((p) => p.xp)} labels={d.xpSeries.map((p) => p.day.slice(5))} />
+            <BarChart
+              data={d.xpSeries.map((p) => p.xp)}
+              labels={d.xpSeries.map((p) => p.day.slice(5))}
+            />
           )}
         </ChartCard>
         <ChartCard title="Rolling accuracy" subtitle="20-answer moving average">
@@ -196,10 +254,20 @@ function AnalyticsPage() {
       </div>
 
       {/* Confidence calibration */}
-      <ChartCard title="Confidence calibration" subtitle="Are you as sure as you should be? Bars show actual accuracy per confidence tier.">
+      <ChartCard
+        title="Confidence calibration"
+        subtitle="Are you as sure as you should be? Bars show actual accuracy per confidence tier."
+      >
         <div className="space-y-2.5">
           {d.calibration.map((c) => {
-            const target = c.key === "certain" ? 0.95 : c.key === "confident" ? 0.85 : c.key === "unsure" ? 0.55 : 0.35;
+            const target =
+              c.key === "certain"
+                ? 0.95
+                : c.key === "confident"
+                  ? 0.85
+                  : c.key === "unsure"
+                    ? 0.55
+                    : 0.35;
             const danger = c.total > 0 && c.accuracy < target - 0.15;
             return (
               <div key={c.key} className="rounded-lg border bg-background p-3">
@@ -211,7 +279,10 @@ function AnalyticsPage() {
                 </div>
                 <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
                   <div
-                    className={cn("h-full rounded-full transition-all", danger ? "bg-destructive" : "bg-primary")}
+                    className={cn(
+                      "h-full rounded-full transition-all",
+                      danger ? "bg-destructive" : "bg-primary",
+                    )}
                     style={{ width: `${c.accuracy * 100}%` }}
                   />
                   <div
@@ -237,7 +308,11 @@ function AnalyticsPage() {
         <div className="grid gap-x-6 gap-y-3.5 sm:grid-cols-2">
           {d.topics.map((t) => (
             <Link key={t.id} to="/bank" search={{ topic: t.id } as never}>
-              <TopicBar label={`${t.short} · ${t.mastered}/${t.total}`} value={t.strength} tone={t.tone} />
+              <TopicBar
+                label={`${t.short} · ${t.mastered}/${t.total}`}
+                value={t.strength}
+                tone={t.tone}
+              />
             </Link>
           ))}
         </div>
@@ -248,22 +323,34 @@ function AnalyticsPage() {
           <h2 className="mb-4 text-base font-semibold">Accuracy by question type</h2>
           <div className="space-y-3.5">
             {d.types.map((t) => (
-              <TopicBar key={t.key} label={`${t.label} · ${t.correct}/${t.attempts || 0}`} value={t.attempts ? t.correct / t.attempts : 0} tone="var(--viz-1)" />
+              <TopicBar
+                key={t.key}
+                label={`${t.label} · ${t.correct}/${t.attempts || 0}`}
+                value={t.attempts ? t.correct / t.attempts : 0}
+                tone="var(--viz-1)"
+              />
             ))}
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            Multi-answer and "find the incorrect" items are the classic traps — they require exact selection.
+            Multi-answer and "find the incorrect" items are the classic traps — they require exact
+            selection.
           </p>
         </div>
 
-        <ChartCard title="Exam attempts over time" subtitle={`${d.exams.length} attempt${d.exams.length === 1 ? "" : "s"}`}>
+        <ChartCard
+          title="Exam attempts over time"
+          subtitle={`${d.exams.length} attempt${d.exams.length === 1 ? "" : "s"}`}
+        >
           {d.exams.length === 0 ? (
             <Empty>No exam attempts yet. Take the simulation to start tracking.</Empty>
           ) : (
             <LineChart points={d.exams.map((e) => (e.score / e.total) * 100)} />
           )}
           <div className="mt-3 text-right">
-            <Link to="/exam" className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+            <Link
+              to="/exam"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
               Take exam <ArrowRight className="size-3" />
             </Link>
           </div>
@@ -283,9 +370,16 @@ function AnalyticsPage() {
         ) : (
           <div className="space-y-2">
             {d.miss.map((q) => (
-              <div key={q.id} className="flex items-center gap-3 rounded-lg border bg-background p-2.5">
-                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold text-primary">Q{q.examNo}</span>
-                <span className="text-xs" style={{ color: TOPIC_BY_ID[q.topic].tone }}>{TOPIC_BY_ID[q.topic].short}</span>
+              <div
+                key={q.id}
+                className="flex items-center gap-3 rounded-lg border bg-background p-2.5"
+              >
+                <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold text-primary">
+                  Q{q.examNo}
+                </span>
+                <span className="text-xs" style={{ color: TOPIC_BY_ID[q.topic].tone }}>
+                  {TOPIC_BY_ID[q.topic].short}
+                </span>
                 <span className="min-w-0 flex-1 truncate text-sm">{q.stem}</span>
               </div>
             ))}
@@ -300,7 +394,13 @@ function AnalyticsPage() {
           {STAGES.map((st) => {
             const reached = lp.level >= st.minLevel;
             return (
-              <div key={st.index} className={cn("flex flex-col items-center gap-1", !reached && "opacity-35 grayscale")}>
+              <div
+                key={st.index}
+                className={cn(
+                  "flex flex-col items-center gap-1",
+                  !reached && "opacity-35 grayscale",
+                )}
+              >
                 <Companion level={st.minLevel} size={48} bob={false} />
                 <span className="text-[11px] font-semibold">{st.name}</span>
                 <span className="text-[10px] text-muted-foreground">Lv {st.minLevel}</span>
@@ -311,37 +411,59 @@ function AnalyticsPage() {
         <div className="mt-4">
           <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
             <span>{stage.title}</span>
-            {next && <span>{lp.need - lp.into} XP to {next.name}</span>}
+            {next && (
+              <span>
+                {lp.need - lp.into} XP to {next.name}
+              </span>
+            )}
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${lp.pct}%` }} />
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${lp.pct}%` }}
+            />
           </div>
         </div>
 
-        {(d.character?.special === "angel" || d.character?.special === "devil") && d.tier.nextTier && (
-          <div className="mt-5 rounded-xl border bg-background/60 p-3">
-            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Ascension to Tier {d.tier.nextTier}
+        {(d.character?.special === "angel" || d.character?.special === "devil") &&
+          d.tier.nextTier && (
+            <div className="mt-5 rounded-xl border bg-background/60 p-3">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Ascension to Tier {d.tier.nextTier}
+              </div>
+              <div className="space-y-2">
+                <MissionBar
+                  label={`Reach Level ${d.tier.levelForNext}`}
+                  progress={Math.min(1, lp.level / (d.tier.levelForNext ?? 1))}
+                  progressLabel={`Lv ${lp.level}/${d.tier.levelForNext}`}
+                  done={lp.level >= (d.tier.levelForNext ?? 0)}
+                />
+                {d.tier.missionsForNext.map((m) => (
+                  <MissionBar
+                    key={m.key}
+                    label={m.label}
+                    progress={m.progress}
+                    progressLabel={m.progressLabel}
+                    done={m.complete}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="space-y-2">
-              <MissionBar
-                label={`Reach Level ${d.tier.levelForNext}`}
-                progress={Math.min(1, lp.level / (d.tier.levelForNext ?? 1))}
-                progressLabel={`Lv ${lp.level}/${d.tier.levelForNext}`}
-                done={lp.level >= (d.tier.levelForNext ?? 0)}
-              />
-              {d.tier.missionsForNext.map((m) => (
-                <MissionBar key={m.key} label={m.label} progress={m.progress} progressLabel={m.progressLabel} done={m.complete} />
-              ))}
-            </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   );
 }
 
-function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function ChartCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-2xl border bg-card p-5 shadow-sm">
       <h2 className="text-base font-semibold">{title}</h2>
@@ -355,15 +477,31 @@ function Empty({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-muted-foreground">{children}</p>;
 }
 
-function MissionBar({ label, progress, progressLabel, done }: { label: string; progress: number; progressLabel: string; done: boolean }) {
+function MissionBar({
+  label,
+  progress,
+  progressLabel,
+  done,
+}: {
+  label: string;
+  progress: number;
+  progressLabel: string;
+  done: boolean;
+}) {
   return (
     <div>
       <div className="flex items-center justify-between text-xs">
-        <span className={cn("font-medium", done && "text-success")}>{done ? "✓ " : ""}{label}</span>
+        <span className={cn("font-medium", done && "text-success")}>
+          {done ? "✓ " : ""}
+          {label}
+        </span>
         <span className="tabular-nums text-muted-foreground">{progressLabel}</span>
       </div>
       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className={cn("h-full rounded-full", done ? "bg-success" : "bg-primary")} style={{ width: `${Math.min(100, progress * 100)}%` }} />
+        <div
+          className={cn("h-full rounded-full", done ? "bg-success" : "bg-primary")}
+          style={{ width: `${Math.min(100, progress * 100)}%` }}
+        />
       </div>
     </div>
   );
@@ -381,13 +519,29 @@ function LineChart({ points }: { points: number[] }) {
     const y = pad + (1 - (p - min) / (max - min)) * (h - pad * 2);
     return [x, y] as const;
   });
-  const path = coords.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const path = coords
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(" ");
   const area = `${path} L${coords[coords.length - 1][0].toFixed(1)},${h - pad} L${coords[0][0].toFixed(1)},${h - pad} Z`;
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" preserveAspectRatio="none">
-      <line x1={pad} y1={pad + (h - pad * 2) * 0.15} x2={w - pad} y2={pad + (h - pad * 2) * 0.15} stroke="var(--border)" strokeDasharray="3 3" />
+      <line
+        x1={pad}
+        y1={pad + (h - pad * 2) * 0.15}
+        x2={w - pad}
+        y2={pad + (h - pad * 2) * 0.15}
+        stroke="var(--border)"
+        strokeDasharray="3 3"
+      />
       <path d={area} fill="var(--primary)" opacity={0.15} />
-      <path d={path} fill="none" stroke="var(--primary)" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+      <path
+        d={path}
+        fill="none"
+        stroke="var(--primary)"
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
       {coords.map(([x, y], i) => (
         <circle key={i} cx={x} cy={y} r={2.4} fill="var(--primary)" />
       ))}
@@ -403,7 +557,11 @@ function BarChart({ data, labels }: { data: number[]; labels: string[] }) {
   const bw = (w - pad * 2) / Math.max(1, data.length);
   return (
     <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${w} ${h}`} className="h-28 w-full min-w-[280px]" preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        className="h-28 w-full min-w-[280px]"
+        preserveAspectRatio="none"
+      >
         {data.map((v, i) => {
           const barH = (v / maxV) * (h - pad * 2);
           return (

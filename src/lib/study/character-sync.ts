@@ -32,7 +32,8 @@ async function fetchAndApply(userId: string) {
 async function pushCharacterNow(userId: string, character: CharacterCustomization) {
   try {
     const { data: userData } = await supabase.auth.getUser();
-    const meta = userData.user?.user_metadata as { display_name?: string; full_name?: string } | undefined;
+    const meta = userData.user?.user_metadata as
+      { display_name?: string; full_name?: string } | undefined;
     const displayName =
       meta?.display_name || meta?.full_name || userData.user?.email?.split("@")[0] || "Player";
     await supabase.from("profiles").upsert(

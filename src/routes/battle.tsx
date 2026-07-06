@@ -32,7 +32,6 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/battle")({ component: BattlePage });
 
-
 const BATTLE_SIZE = 8;
 
 type BattleMode = "accuracy" | "speed";
@@ -60,7 +59,6 @@ interface Player {
   joined_at: string;
   character: CharacterCustomization | null;
 }
-
 
 interface AnswerRow {
   id: string;
@@ -113,12 +111,11 @@ function BattlePage() {
       if (data.user) {
         setUserId(data.user.id);
         const meta = data.user.user_metadata as { display_name?: string; full_name?: string };
-        setDisplayName(safeDisplayName(
-          meta.display_name ||
-            meta.full_name ||
-            data.user.email?.split("@")[0] ||
-            "Player",
-        ));
+        setDisplayName(
+          safeDisplayName(
+            meta.display_name || meta.full_name || data.user.email?.split("@")[0] || "Player",
+          ),
+        );
       }
       setAuthChecked(true);
     });
@@ -167,13 +164,7 @@ function SignedOutView() {
 // Authenticated view: lobby / room
 // ─────────────────────────────────────────────────────────────
 
-function BattleAuthenticated({
-  userId,
-  displayName,
-}: {
-  userId: string;
-  displayName: string;
-}) {
+function BattleAuthenticated({ userId, displayName }: { userId: string; displayName: string }) {
   const [roomId, setRoomId] = useState<string | null>(null);
 
   if (!roomId) {
@@ -265,20 +256,17 @@ function Lobby({
         return;
       }
       const snapshotChar = withDerivedTier(character, getState()) ?? character ?? null;
-      const { error: joinErr } = await db
-        .from("battle_players")
-        .upsert(
-          {
-            room_id: room.id,
-            user_id: userId,
-            display_name: safeDisplayName(displayName),
-            character: snapshotChar as never,
-          },
-          { onConflict: "room_id,user_id" },
-        );
+      const { error: joinErr } = await db.from("battle_players").upsert(
+        {
+          room_id: room.id,
+          user_id: userId,
+          display_name: safeDisplayName(displayName),
+          character: snapshotChar as never,
+        },
+        { onConflict: "room_id,user_id" },
+      );
       if (joinErr) throw joinErr;
       onEnter(room.id);
-
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to join");
     } finally {
@@ -320,7 +308,9 @@ function Lobby({
                 onClick={() => setMode("speed")}
                 className={cn(
                   "rounded-xl border-2 p-4 text-left transition-colors",
-                  mode === "speed" ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  mode === "speed"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:bg-accent",
                 )}
               >
                 <Zap className="mb-3 size-5 text-primary" />
@@ -470,14 +460,7 @@ function BattleRoom({
   }
 
   if (room.status === "waiting") {
-    return (
-      <WaitingRoom
-        room={room}
-        players={players}
-        userId={userId}
-        onLeave={onLeave}
-      />
-    );
+    return <WaitingRoom room={room} players={players} userId={userId} onLeave={onLeave} />;
   }
 
   return (
@@ -649,8 +632,18 @@ function PlayingRoom({
   const [myFx, setMyFx] = useState<"lunge" | "shake" | null>(null);
   const [oppFx, setOppFx] = useState<"lunge" | "shake" | null>(null);
   const [slashOn, setSlashOn] = useState<"me->opp" | "opp->me" | null>(null);
+  const [myDmg, setMyDmg] = useState<{ n: number; crit: boolean; k: number } | null>(null);
+  const [oppDmg, setOppDmg] = useState<{ n: number; crit: boolean; k: number } | null>(null);
+  const [elapsed, setElapsed] = useState(0);
   const prevMyAnswerCountRef = useRef(0);
   const prevOppAnswerCountRef = useRef(0);
+
+  // Live per-question timer (counts up, resets each round)
+  useEffect(() => {
+    setElapsed(0);
+    const id = window.setInterval(() => setElapsed((e) => e + 100), 100);
+    return () => window.clearInterval(id);
+  }, [myIdx]);
 
   const submit = useCallback(async () => {
     if (!currentQ || submitting) return;
@@ -663,13 +656,16 @@ function PlayingRoom({
       const result = grade(currentQ, selected);
 
       // Trigger my FX immediately (don't wait for realtime bounce)
+      const fast = ms < 6000;
       if (result.correct) {
         setMyFx("lunge");
         setSlashOn("me->opp");
+        setOppDmg({ n: fast ? 18 : 12, crit: fast, k: Date.now() }); // I strike the opponent
         setTimeout(() => setSlashOn(null), 550);
         setTimeout(() => setMyFx(null), 650);
       } else {
         setMyFx("shake");
+        setMyDmg({ n: 6, crit: false, k: Date.now() }); // self-inflicted from a miss
         setTimeout(() => setMyFx(null), 550);
       }
 
@@ -717,17 +713,18 @@ function PlayingRoom({
       if (latest.correct) {
         setOppFx("lunge");
         setSlashOn("opp->me");
+        setMyDmg({ n: latest.ms < 6000 ? 18 : 12, crit: latest.ms < 6000, k: Date.now() }); // they strike me
         setTimeout(() => setSlashOn(null), 550);
         setTimeout(() => setOppFx(null), 650);
       } else {
         setOppFx("shake");
+        setOppDmg({ n: 6, crit: false, k: Date.now() });
         setTimeout(() => setOppFx(null), 550);
       }
     }
     prevOppAnswerCountRef.current = oppAnswered.length;
     prevMyAnswerCountRef.current = myAnswers.length;
   }, [answers, opponent, myAnswers.length]);
-
 
   // Host closes room when everyone is done
   useEffect(() => {
@@ -782,8 +779,6 @@ function PlayingRoom({
     })();
   }, [allFinished, me, opponent, userId, displayName, room.mode]);
 
-
-
   const toggle = (id: string) => {
     if (!currentQ) return;
     setSelected((prev) => {
@@ -795,13 +790,16 @@ function PlayingRoom({
   };
 
   // Derived HP: 100 - opponent's correct hits × 12 - your wrong-answer self-damage × 6.
-  const oppCorrect = opponent ? answers.filter((a) => a.user_id === opponent.user_id && a.correct).length : 0;
-  const oppWrong = opponent ? answers.filter((a) => a.user_id === opponent.user_id && !a.correct).length : 0;
+  const oppCorrect = opponent
+    ? answers.filter((a) => a.user_id === opponent.user_id && a.correct).length
+    : 0;
+  const oppWrong = opponent
+    ? answers.filter((a) => a.user_id === opponent.user_id && !a.correct).length
+    : 0;
   const myCorrect = myAnswers.filter((a) => a.correct).length;
   const myWrong = myAnswers.filter((a) => !a.correct).length;
   const myHP = Math.max(0, 100 - oppCorrect * 12 - myWrong * 6);
   const oppHP = Math.max(0, 100 - myCorrect * 12 - oppWrong * 6);
-
 
   // Live action feed
   const feed = useMemo(() => {
@@ -813,9 +811,9 @@ function PlayingRoom({
     return items.map((a) => {
       const p = players.find((x) => x.user_id === a.user_id);
       const label = p ? (p.user_id === userId ? "You" : p.display_name) : "Player";
-      const idx = answers
-        .filter((x) => x.user_id === a.user_id && x.answered_at <= a.answered_at)
-        .length;
+      const idx = answers.filter(
+        (x) => x.user_id === a.user_id && x.answered_at <= a.answered_at,
+      ).length;
       return { id: a.id, label, idx, ms: a.ms, correct: a.correct };
     });
   }, [answers, players, userId]);
@@ -851,7 +849,9 @@ function PlayingRoom({
         {allFinished && me && (
           <div className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-card p-8 text-center shadow-lg">
             <div className="flex items-center justify-center">
-              <div className={cn("flex size-32 items-center justify-center", won && "battle-victory")}>
+              <div
+                className={cn("flex size-32 items-center justify-center", won && "battle-victory")}
+              >
                 <Companion
                   level={levelProgress(getState().profile.xp).level}
                   size={120}
@@ -911,11 +911,22 @@ function PlayingRoom({
             {myAnswers.map((a, i) => {
               const q = questions.find((qq) => qq.id === a.qid);
               return (
-                <div key={a.id} className="flex items-center gap-3 rounded-lg border bg-background p-2.5">
-                  <span className="w-7 shrink-0 text-xs font-bold text-muted-foreground">#{i + 1}</span>
-                  {a.correct ? <Check className="size-4 text-success" /> : <X className="size-4 text-destructive" />}
+                <div
+                  key={a.id}
+                  className="flex items-center gap-3 rounded-lg border bg-background p-2.5"
+                >
+                  <span className="w-7 shrink-0 text-xs font-bold text-muted-foreground">
+                    #{i + 1}
+                  </span>
+                  {a.correct ? (
+                    <Check className="size-4 text-success" />
+                  ) : (
+                    <X className="size-4 text-destructive" />
+                  )}
                   <span className="min-w-0 flex-1 truncate text-sm">{q?.stem ?? a.qid}</span>
-                  <span className="hidden text-xs text-muted-foreground sm:inline">{fmtSeconds(a.ms)}</span>
+                  <span className="hidden text-xs text-muted-foreground sm:inline">
+                    {fmtSeconds(a.ms)}
+                  </span>
                 </div>
               );
             })}
@@ -951,7 +962,10 @@ function PlayingRoom({
         {/* Ground line */}
         <div
           className="absolute inset-x-0 bottom-0 h-16 opacity-40"
-          style={{ background: "radial-gradient(ellipse at center, rgba(255,255,255,0.15), transparent 70%)" }}
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(255,255,255,0.15), transparent 70%)",
+          }}
         />
         <div className="relative grid grid-cols-[1fr_auto_1fr] items-end gap-2">
           {/* Me */}
@@ -964,6 +978,7 @@ function PlayingRoom({
             fx={myFx}
             side="left"
             flash={myFx === "shake"}
+            dmg={myDmg}
           />
           <div className="relative flex flex-col items-center justify-center pb-6 text-white/80">
             <div className="text-[10px] font-bold uppercase tracking-widest text-white/60">VS</div>
@@ -986,10 +1001,25 @@ function PlayingRoom({
               fx={oppFx}
               side="right"
               flash={oppFx === "shake"}
+              dmg={oppDmg}
             />
           ) : (
             <div className="pb-4 text-right text-xs text-white/60">Waiting for opponent…</div>
           )}
+        </div>
+
+        {/* KO flash when a fighter is downed */}
+        {(myHP <= 0 || oppHP <= 0) && (
+          <div className="ko-flash pointer-events-none absolute inset-0 flex items-center justify-center">
+            <span className="text-4xl font-black tracking-widest text-rose-500 drop-shadow-[0_0_12px_rgba(244,63,94,0.7)]">
+              {oppHP <= 0 ? "K.O.!" : "DOWN!"}
+            </span>
+          </div>
+        )}
+        <div className="relative mt-1 flex items-center justify-center">
+          <span className="rounded-full bg-white/10 px-3 py-0.5 text-[11px] font-bold tabular-nums text-white/80">
+            ⏱ {(elapsed / 1000).toFixed(1)}s{room.mode === "speed" ? " · speed counts" : ""}
+          </span>
         </div>
 
         {/* Live feed */}
@@ -998,7 +1028,11 @@ function PlayingRoom({
             <ul className="space-y-1 text-[11px] text-white/80">
               {feed.map((f) => (
                 <li key={f.id} className="flex items-center gap-2">
-                  {f.correct ? <Check className="size-3 text-emerald-400" /> : <X className="size-3 text-rose-400" />}
+                  {f.correct ? (
+                    <Check className="size-3 text-emerald-400" />
+                  ) : (
+                    <X className="size-3 text-rose-400" />
+                  )}
                   <span className="font-semibold">{f.label}</span>
                   <span className="text-white/50">answered in {fmtSeconds(f.ms)}</span>
                 </li>
@@ -1080,6 +1114,7 @@ function ArenaFighter({
   fx,
   side,
   flash,
+  dmg,
 }: {
   name: string;
   hp: number;
@@ -1089,20 +1124,53 @@ function ArenaFighter({
   fx: "lunge" | "shake" | null;
   side: "left" | "right";
   flash: boolean;
+  dmg: { n: number; crit: boolean; k: number } | null;
 }) {
-  const lungeClass = fx === "lunge" ? (side === "left" ? "battle-lunge-left" : "battle-lunge-right") : "";
+  const lungeClass =
+    fx === "lunge" ? (side === "left" ? "battle-lunge-left" : "battle-lunge-right") : "";
   const shakeClass = fx === "shake" ? "battle-shake" : "";
+  const down = hp <= 0;
   return (
-    <div className={cn("relative flex flex-col gap-2", side === "right" && "items-end", flash && "battle-flash-red rounded-xl")}>
+    <div
+      className={cn(
+        "relative flex flex-col gap-2",
+        side === "right" && "items-end",
+        flash && "battle-flash-red rounded-xl",
+      )}
+    >
       <div className={cn("relative flex", side === "left" ? "justify-start" : "justify-end")}>
-        <div className={cn("relative", lungeClass, shakeClass)} style={{ transform: side === "right" ? "scaleX(-1)" : undefined }}>
-          <Companion level={12} size={96} character={character} mood={fx === "shake" ? "sad" : "idle"} />
+        {dmg && (
+          <span
+            key={dmg.k}
+            className={cn(
+              "dmg-float pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2 font-black drop-shadow",
+              dmg.crit ? "text-2xl text-amber-300" : "text-xl text-rose-400",
+            )}
+          >
+            -{dmg.n}
+            {dmg.crit && <span className="ml-1 text-xs align-top">CRIT!</span>}
+          </span>
+        )}
+        <div
+          className={cn("relative", lungeClass, shakeClass, down && "opacity-40 grayscale")}
+          style={{ transform: side === "right" ? "scaleX(-1)" : undefined }}
+        >
+          <Companion
+            level={12}
+            size={96}
+            character={character}
+            mood={down ? "sad" : fx === "shake" ? "sad" : "idle"}
+          />
         </div>
       </div>
       <div className={cn("w-full max-w-[220px]", side === "right" && "ml-auto")}>
         <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white">
-          <span className="flex items-center gap-1"><Heart className="size-3 text-rose-400" /> {name}</span>
-          <span className="tabular-nums text-white/70">{correct}/{total}</span>
+          <span className="flex items-center gap-1">
+            <Heart className="size-3 text-rose-400" /> {name}
+          </span>
+          <span className="tabular-nums text-white/70">
+            {correct}/{total}
+          </span>
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-white/20">
           <div
@@ -1117,4 +1185,3 @@ function ArenaFighter({
     </div>
   );
 }
-

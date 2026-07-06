@@ -16,8 +16,7 @@ function friendlyError(msg: string): string {
     return "Please confirm your email first — check your inbox.";
   if (m.includes("user already registered"))
     return "That email is already registered. Try signing in.";
-  if (m.includes("password should be"))
-    return "Password must be at least 6 characters.";
+  if (m.includes("password should be")) return "Password must be at least 6 characters.";
   return msg;
 }
 

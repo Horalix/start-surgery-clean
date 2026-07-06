@@ -1,6 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Library, Check, X, ChevronDown, Play, ArrowLeft, Search, Flag, Info } from "lucide-react";
+import {
+  Library,
+  Check,
+  X,
+  ChevronDown,
+  Play,
+  ArrowLeft,
+  Search,
+  Flag,
+  Info,
+  Eye,
+  EyeOff,
+  BookOpen,
+} from "lucide-react";
 import { QUESTIONS, type Question, type TopicId } from "@/data/questions";
 import { TOPICS, TOPIC_BY_ID } from "@/data/topics";
 import { getState, useStore } from "@/lib/study/store";
@@ -43,6 +56,7 @@ function BankPage() {
   const navigate = useNavigate({ from: "/bank" });
   const [practice, setPractice] = useState<Question[] | null>(null);
   const [query, setQuery] = useState("");
+  const [revealAll, setRevealAll] = useState(false);
   const tick = useStore(
     (s) => s.profile.xp + Object.keys(s.progress).length + Object.keys(s.flagged).length,
   );
@@ -93,16 +107,36 @@ function BankPage() {
     <div>
       <PageTitle
         title="Master Bank"
-        subtitle="Every source question, browsable and practisable. Answers are shown here for reference — use practice for testing."
+        subtitle="Read the whole answer key, then test yourself. Reveal every answer to study, or jump straight into practice."
         icon={<Library className="size-5" />}
         action={
           list.length > 0 && (
-            <Button className="gap-2" onClick={() => setPractice(list.slice())}>
-              <Play className="size-4" /> Practice {list.length}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={revealAll ? "default" : "outline"}
+                className="gap-2"
+                onClick={() => setRevealAll((v) => !v)}
+              >
+                {revealAll ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                {revealAll ? "Hide answers" : "Reveal all"}
+              </Button>
+              <Button className="gap-2" onClick={() => setPractice(list.slice())}>
+                <Play className="size-4" /> Practice {list.length}
+              </Button>
+            </div>
           )
         }
       />
+
+      {revealAll && (
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm text-foreground">
+          <BookOpen className="size-4 shrink-0 text-primary" />
+          <span>
+            <strong>Study mode.</strong> All {list.length} answers are open below. When you feel
+            ready, hit <em>Practice {list.length}</em> to test recall.
+          </span>
+        </div>
+      )}
 
       {/* search */}
       <div className="relative mb-3">
@@ -161,7 +195,7 @@ function BankPage() {
       ) : (
         <div className="space-y-2">
           {list.map((q) => (
-            <BankRow key={q.id} q={q} />
+            <BankRow key={q.id} q={q} forceOpen={revealAll} />
           ))}
         </div>
       )}
@@ -169,8 +203,10 @@ function BankPage() {
   );
 }
 
-function BankRow({ q }: { q: Question }) {
-  const [open, setOpen] = useState(false);
+function BankRow({ q, forceOpen = false }: { q: Question; forceOpen?: boolean }) {
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = forceOpen || localOpen;
+  const setOpen = setLocalOpen;
   const p = useStore((s) => s.progress[q.id]);
   const flagged = useStore((s) => !!s.flagged[q.id]);
   const strength = masteryStrength(p);
