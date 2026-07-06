@@ -645,6 +645,13 @@ function PlayingRoom({
     (p) => answers.filter((a) => a.user_id === p.user_id).length >= questions.length,
   );
 
+  // ── Battle FX state ──────────────────────────────────────────
+  const [myFx, setMyFx] = useState<"lunge" | "shake" | null>(null);
+  const [oppFx, setOppFx] = useState<"lunge" | "shake" | null>(null);
+  const [slashOn, setSlashOn] = useState<"me->opp" | "opp->me" | null>(null);
+  const prevMyAnswerCountRef = useRef(0);
+  const prevOppAnswerCountRef = useRef(0);
+
   const submit = useCallback(async () => {
     if (!currentQ || submitting) return;
     if (selected.length !== currentQ.select) return;
@@ -655,6 +662,17 @@ function PlayingRoom({
       const ms = Date.now() - questionStartRef.current;
       const result = grade(currentQ, selected);
 
+      // Trigger my FX immediately (don't wait for realtime bounce)
+      if (result.correct) {
+        setMyFx("lunge");
+        setSlashOn("me->opp");
+        setTimeout(() => setSlashOn(null), 550);
+        setTimeout(() => setMyFx(null), 650);
+      } else {
+        setMyFx("shake");
+        setTimeout(() => setMyFx(null), 550);
+      }
+
       // Local per-user learning store
       recordAnswer({
         qid: currentQ.id,
@@ -664,7 +682,6 @@ function PlayingRoom({
         selected,
       });
 
-      // Insert answer row
       const { error } = await db.from("battle_answers").insert({
         room_id: room.id,
         user_id: userId,
@@ -675,7 +692,6 @@ function PlayingRoom({
       });
       if (error) throw error;
 
-      // Update player aggregates
       const newCorrect = (me?.correct_count ?? 0) + (result.correct ? 1 : 0);
       const newTotalMs = (me?.total_ms ?? 0) + ms;
       const newScore = computeScore(room.mode, newCorrect, newTotalMs);
@@ -691,6 +707,27 @@ function PlayingRoom({
       setSubmitting(false);
     }
   }, [currentQ, selected, submitting, room.id, room.mode, userId, me]);
+
+  // React to opponent answers landing via realtime → FX on their side
+  useEffect(() => {
+    if (!opponent) return;
+    const oppAnswered = answers.filter((a) => a.user_id === opponent.user_id);
+    if (oppAnswered.length > prevOppAnswerCountRef.current) {
+      const latest = oppAnswered[oppAnswered.length - 1];
+      if (latest.correct) {
+        setOppFx("lunge");
+        setSlashOn("opp->me");
+        setTimeout(() => setSlashOn(null), 550);
+        setTimeout(() => setOppFx(null), 650);
+      } else {
+        setOppFx("shake");
+        setTimeout(() => setOppFx(null), 550);
+      }
+    }
+    prevOppAnswerCountRef.current = oppAnswered.length;
+    prevMyAnswerCountRef.current = myAnswers.length;
+  }, [answers, opponent, myAnswers.length]);
+
 
   // Host closes room when everyone is done
   useEffect(() => {
