@@ -264,6 +264,7 @@ function Lobby({
         toast.error("No open room with that code");
         return;
       }
+      const snapshotChar = withDerivedTier(character, getState()) ?? character ?? null;
       const { error: joinErr } = await db
         .from("battle_players")
         .upsert(
@@ -271,11 +272,13 @@ function Lobby({
             room_id: room.id,
             user_id: userId,
             display_name: safeDisplayName(displayName),
+            character: snapshotChar as never,
           },
           { onConflict: "room_id,user_id" },
         );
       if (joinErr) throw joinErr;
       onEnter(room.id);
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to join");
     } finally {
