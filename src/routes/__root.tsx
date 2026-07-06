@@ -137,6 +137,12 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    // Fire-and-forget: sync the selected character with the user's cloud profile
+    // so the surgeon skin follows them across devices (mobile ↔ desktop).
+    void import("../lib/study/character-sync").then((m) => m.initCharacterSync());
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ClientGate>
@@ -148,3 +154,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
