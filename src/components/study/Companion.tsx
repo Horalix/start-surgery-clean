@@ -937,7 +937,7 @@ function buildSamurai(mood: CompanionMood): Px[] {
   const NEON = "#22e8f0", NEON_D = "#0aa8b8", NEON_L = "#a8fdff";
   const HOLO = "#ff5ac9", HOLO_L = "#ffb3e8";
   const CIRCUIT = "#3affd4";
-  const BLADE = "#b6f7ff", BLADE_D = "#4fb7c0";
+  const BLADE = "#b6f7ff", BLADE_D = "#4fb7c0", BLADE_L = "#e8fbff";
   const HAIR = "#111318";
 
   // Neon backdrop stripes
