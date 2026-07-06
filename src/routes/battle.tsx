@@ -794,20 +794,14 @@ function PlayingRoom({
     });
   };
 
-  // Derived HP: starts at 100, each wrong answer chips away at your HP; opponent
-  // "attacks" via their correct answers.
-  const myHP = Math.max(
-    0,
-    100 - opponentAnswers /* nudged */ - opponentAnswers * 3 -
-      (answers.filter((a) => a.user_id === opponent?.user_id && a.correct).length * 8) -
-      (myAnswers.filter((a) => !a.correct).length * 5),
-  );
-  const oppHP = Math.max(
-    0,
-    100 -
-      (myAnswers.filter((a) => a.correct).length * 8) -
-      ((opponent ? answers.filter((a) => a.user_id === opponent.user_id && !a.correct).length : 0) * 5),
-  );
+  // Derived HP: 100 - opponent's correct hits × 12 - your wrong-answer self-damage × 6.
+  const oppCorrect = opponent ? answers.filter((a) => a.user_id === opponent.user_id && a.correct).length : 0;
+  const oppWrong = opponent ? answers.filter((a) => a.user_id === opponent.user_id && !a.correct).length : 0;
+  const myCorrect = myAnswers.filter((a) => a.correct).length;
+  const myWrong = myAnswers.filter((a) => !a.correct).length;
+  const myHP = Math.max(0, 100 - oppCorrect * 12 - myWrong * 6);
+  const oppHP = Math.max(0, 100 - myCorrect * 12 - oppWrong * 6);
+
 
   // Live action feed
   const feed = useMemo(() => {
