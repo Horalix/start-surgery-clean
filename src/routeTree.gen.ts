@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RapidRouteImport } from './routes/rapid'
+import { Route as QuestRouteImport } from './routes/quest'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LearnRouteImport } from './routes/learn'
@@ -36,6 +37,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const RapidRoute = RapidRouteImport.update({
   id: '/rapid',
   path: '/rapid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestRoute = QuestRouteImport.update({
+  id: '/quest',
+  path: '/quest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotebookRoute = NotebookRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
+  '/quest': typeof QuestRoute
   '/rapid': typeof RapidRoute
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
+  '/quest': typeof QuestRoute
   '/rapid': typeof RapidRoute
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/learn': typeof LearnRoute
   '/mcp': typeof McpRoute
   '/notebook': typeof NotebookRoute
+  '/quest': typeof QuestRoute
   '/rapid': typeof RapidRoute
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/mcp'
     | '/notebook'
+    | '/quest'
     | '/rapid'
     | '/reset-password'
     | '/.mcp/list-tools'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/mcp'
     | '/notebook'
+    | '/quest'
     | '/rapid'
     | '/reset-password'
     | '/.mcp/list-tools'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/learn'
     | '/mcp'
     | '/notebook'
+    | '/quest'
     | '/rapid'
     | '/reset-password'
     | '/.mcp/list-tools'
@@ -260,6 +272,7 @@ export interface RootRouteChildren {
   LearnRoute: typeof LearnRoute
   McpRoute: typeof McpRoute
   NotebookRoute: typeof NotebookRoute
+  QuestRoute: typeof QuestRoute
   RapidRoute: typeof RapidRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -281,6 +294,13 @@ declare module '@tanstack/react-router' {
       path: '/rapid'
       fullPath: '/rapid'
       preLoaderRoute: typeof RapidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quest': {
+      id: '/quest'
+      path: '/quest'
+      fullPath: '/quest'
+      preLoaderRoute: typeof QuestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notebook': {
@@ -412,6 +432,7 @@ const rootRouteChildren: RootRouteChildren = {
   LearnRoute: LearnRoute,
   McpRoute: McpRoute,
   NotebookRoute: NotebookRoute,
+  QuestRoute: QuestRoute,
   RapidRoute: RapidRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,

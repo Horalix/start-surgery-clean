@@ -20,6 +20,7 @@ import {
   LogOut,
   Trophy,
   UserCog,
+  Map,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore, toggleTheme } from "@/lib/study/store";
@@ -37,7 +38,8 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: "/", label: "Today", icon: Home, core: true },
   { to: "/learn", label: "Learn", icon: GraduationCap, core: true },
-  { to: "/rapid", label: "Rapid Recall", icon: Zap, core: true },
+  { to: "/quest", label: "Quest Map", icon: Map, core: true },
+  { to: "/rapid", label: "Rapid Recall", icon: Zap },
   { to: "/drill", label: "Weakness Drill", icon: Dumbbell, core: true },
   { to: "/exam", label: "Exam Simulation", icon: ClipboardCheck, core: true },
   { to: "/bank", label: "Master Bank", icon: Library },

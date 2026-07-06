@@ -9,6 +9,8 @@ import type {
   Settings,
 } from "./types";
 import { emptyProgress, schedule } from "./srs";
+import { comboBonus, dayKey, newlyUnlocked } from "./gamify";
+import { toast } from "sonner";
 
 const KEY = "surgery1-mastery-v1";
 const VERSION = 1;
@@ -29,6 +31,8 @@ export function defaultState(): AppState {
       bestExamScore: null,
       battlesWon: 0,
       battlesPlayed: 0,
+      combo: 0,
+      bestCombo: 0,
     },
     settings: {
       theme: "light",
@@ -40,6 +44,9 @@ export function defaultState(): AppState {
     examAttempts: [],
     flagged: {},
     notUnderstood: {},
+    achievements: {},
+    questClaims: {},
+    bossWins: {},
   };
 }
 
@@ -74,9 +81,19 @@ export function hydrate() {
   try {
     const raw = window.localStorage.getItem(KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as AppState;
+      const parsed = JSON.parse(raw) as Partial<AppState>;
       if (parsed && parsed.version === VERSION) {
-        state = sanitizeState({ ...defaultState(), ...parsed });
+        const base = defaultState();
+        state = sanitizeState({
+          ...base,
+          ...parsed,
+          // Deep-merge so fields added in newer builds get defaults on old saves.
+          profile: { ...base.profile, ...(parsed.profile ?? {}) },
+          settings: { ...base.settings, ...(parsed.settings ?? {}) },
+          achievements: parsed.achievements ?? {},
+          questClaims: parsed.questClaims ?? {},
+          bossWins: parsed.bossWins ?? {},
+        });
       }
     }
   } catch {
@@ -90,6 +107,32 @@ function set(updater: (s: AppState) => AppState) {
   state = updater(state);
   persist();
   emit();
+}
+
+/**
+ * Detect and record any achievements that just unlocked, award XP, and toast.
+ * Called after any mutation that could satisfy an achievement.
+ */
+function checkAchievements() {
+  const unlocked = newlyUnlocked(state);
+  if (unlocked.length === 0) return;
+  const now = Date.now();
+  state = {
+    ...state,
+    achievements: {
+      ...state.achievements,
+      ...Object.fromEntries(unlocked.map((a) => [a.id, now])),
+    },
+    profile: { ...state.profile, xp: state.profile.xp + unlocked.length * 25 },
+  };
+  persist();
+  emit();
+  for (const a of unlocked) {
+    toast.success(`Achievement unlocked: ${a.name}`, {
+      description: `${a.emoji} ${a.desc} · +25 XP`,
+      duration: 4500,
+    });
+  }
 }
 
 export function subscribe(cb: () => void) {
@@ -166,6 +209,18 @@ export interface RecordAnswerInput {
   selected?: string[];
 }
 
+export interface AnswerReward {
+  progress: QuestionProgress;
+  combo: number;
+  baseXp: number;
+  comboXp: number;
+}
+
+let lastReward: AnswerReward | null = null;
+export function getLastReward(): AnswerReward | null {
+  return lastReward;
+}
+
 export function recordAnswer(input: RecordAnswerInput): QuestionProgress {
   const { qid, correct, confidence, ms, selected } = input;
   const now = Date.now();
@@ -174,7 +229,7 @@ export function recordAnswer(input: RecordAnswerInput): QuestionProgress {
     const prev = s.progress[qid] ?? emptyProgress(qid);
     updated = schedule(prev, { correct, confidence, ms, now, selected });
     // Tightened XP economy — real answers matter, guessing barely does.
-    const gained = correct
+    const baseXp = correct
       ? confidence === "certain"
         ? 10
         : confidence === "confident"
@@ -183,9 +238,20 @@ export function recordAnswer(input: RecordAnswerInput): QuestionProgress {
             ? 6
             : 4
       : 1;
-    const { profile } = bumpStreak({ ...s.profile, xp: s.profile.xp + gained });
+    // Global combo: grows on any fully-correct answer, resets on a miss.
+    const combo = correct ? s.profile.combo + 1 : 0;
+    const bestCombo = Math.max(s.profile.bestCombo, combo);
+    const comboXp = correct ? comboBonus(combo) : 0;
+    lastReward = { progress: updated, combo, baseXp, comboXp };
+    const { profile } = bumpStreak({
+      ...s.profile,
+      xp: s.profile.xp + baseXp + comboXp,
+      combo,
+      bestCombo,
+    });
     return { ...s, progress: { ...s.progress, [qid]: updated }, profile };
   });
+  checkAchievements();
   return updated;
 }
 
@@ -216,6 +282,38 @@ export function logExam(attempt: Omit<ExamAttempt, "at">) {
       profile,
     };
   });
+  checkAchievements();
+}
+
+/** Claim a completed daily quest for XP (idempotent per day). */
+export function claimQuest(questId: string, xp: number): boolean {
+  const key = dayKey();
+  let claimed = false;
+  set((s) => {
+    const today = s.questClaims[key] ?? [];
+    if (today.includes(questId)) return s;
+    claimed = true;
+    return {
+      ...s,
+      questClaims: { ...s.questClaims, [key]: [...today, questId] },
+      profile: { ...s.profile, xp: s.profile.xp + xp },
+    };
+  });
+  if (claimed) {
+    toast.success("Quest complete!", { description: `+${xp} XP claimed` });
+    checkAchievements();
+  }
+  return claimed;
+}
+
+/** Record a solo topic-boss victory. */
+export function recordBossWin(topicId: string) {
+  set((s) => ({
+    ...s,
+    bossWins: { ...s.bossWins, [topicId]: (s.bossWins[topicId] ?? 0) + 1 },
+    profile: { ...s.profile, xp: s.profile.xp + 45 },
+  }));
+  checkAchievements();
 }
 
 export function recordBattle(won: boolean) {
@@ -228,6 +326,7 @@ export function recordBattle(won: boolean) {
       xp: s.profile.xp + (won ? 30 : 5),
     },
   }));
+  checkAchievements();
 }
 
 // ── Flags / notes ────────────────────────────────────────────────────────────

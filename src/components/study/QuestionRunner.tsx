@@ -10,13 +10,16 @@ import {
   Sparkles,
   Info,
   Timer,
+  Flame,
 } from "lucide-react";
 import type { Question } from "@/data/questions";
 import { TOPIC_BY_ID } from "@/data/topics";
 import { grade, CONFIDENCE_META, type Confidence } from "@/lib/study/types";
 import { instruction } from "@/lib/study/instruction";
+import { comboLabel } from "@/lib/study/gamify";
 import {
   recordAnswer,
+  getLastReward,
   logSession,
   toggleFlag,
   toggleNotUnderstood,
@@ -49,10 +52,13 @@ export function QuestionRunner({
   const [done, setDone] = useState(false);
   const startRef = useRef<number>(Date.now());
 
+  const [reward, setReward] = useState<{ baseXp: number; comboXp: number } | null>(null);
+
   const q = questions[idx];
   const flagged = useStore((s) => (q ? !!s.flagged[q.id] : false));
   const notUnderstood = useStore((s) => (q ? !!s.notUnderstood[q.id] : false));
   const xp = useStore((s) => s.profile.xp);
+  const combo = useStore((s) => s.profile.combo);
 
   const result = useMemo(
     () => (revealed && q ? grade(q, selected) : null),
@@ -63,6 +69,7 @@ export function QuestionRunner({
     setSelected([]);
     setConfidence(null);
     setRevealed(false);
+    setReward(null);
     startRef.current = Date.now();
   }, []);
 
@@ -88,6 +95,8 @@ export function QuestionRunner({
       setRevealed(true);
       if (g.correct) setCorrectCount((c) => c + 1);
       recordAnswer({ qid: q.id, correct: g.correct, confidence: conf, ms, selected });
+      const r = getLastReward();
+      setReward(r ? { baseXp: r.baseXp, comboXp: r.comboXp } : null);
       if (rapid) {
         window.setTimeout(() => advance(g.correct), g.correct ? 750 : 1600);
       }
@@ -172,6 +181,22 @@ export function QuestionRunner({
             style={{ width: `${(idx / questions.length) * 100}%` }}
           />
         </div>
+        {combo >= 3 && (
+          <span
+            className={cn(
+              "xp-pulse flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
+              combo >= 10
+                ? "bg-orange-500/20 text-orange-500"
+                : combo >= 5
+                  ? "bg-amber-500/20 text-amber-600"
+                  : "bg-primary/15 text-primary",
+            )}
+            title="Consecutive correct answers"
+          >
+            <Flame className="size-3.5" /> x{combo}
+            {comboLabel(combo) && <span className="hidden sm:inline">· {comboLabel(combo)}</span>}
+          </span>
+        )}
         <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
           {idx + 1} / {questions.length}
         </span>
@@ -321,6 +346,8 @@ export function QuestionRunner({
             onRetry={reset}
             rapid={rapid}
             level={level}
+            reward={reward}
+            combo={combo}
             isLast={idx + 1 >= questions.length}
           />
         )}
@@ -339,6 +366,8 @@ function Feedback({
   onRetry,
   rapid,
   level,
+  reward,
+  combo,
   isLast,
 }: {
   q: Question;
@@ -350,10 +379,13 @@ function Feedback({
   onRetry: () => void;
   rapid: boolean;
   level: number;
+  reward: { baseXp: number; comboXp: number } | null;
+  combo: number;
   isLast: boolean;
 }) {
   const good = result.correct;
   const dangerous = !good && confidence && (confidence === "confident" || confidence === "certain");
+  const totalXp = reward ? reward.baseXp + reward.comboXp : 0;
 
   return (
     <div className="mt-5 animate-pop-in">
@@ -372,6 +404,17 @@ function Feedback({
               <span className="text-success">Correct</span>
             ) : (
               <span className="text-destructive">Not quite</span>
+            )}
+            {good && reward && (
+              <span className="xp-pulse rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-bold text-primary">
+                +{totalXp} XP
+                {reward.comboXp > 0 && (
+                  <span className="text-orange-500">
+                    {" "}
+                    (+{reward.comboXp} combo x{combo})
+                  </span>
+                )}
+              </span>
             )}
             {dangerous && (
               <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[11px] font-semibold text-destructive">

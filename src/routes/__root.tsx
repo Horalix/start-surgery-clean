@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ClientGate } from "../components/study/ClientGate";
 import { AppShell } from "../components/study/AppShell";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -173,6 +174,7 @@ function RootComponent() {
           <Outlet />
         </AppShell>
       </ClientGate>
+      <Toaster position="top-center" richColors closeButton />
     </QueryClientProvider>
   );
 }

@@ -18,6 +18,7 @@ import { levelProgress, stageForLevel, nextStage } from "@/lib/study/companion";
 import { withDerivedTier } from "@/lib/study/character-progression";
 import { Companion } from "@/components/study/Companion";
 import { StatCard, Ring, TopicBar } from "@/components/study/primitives";
+import { DailyQuests } from "@/components/study/DailyQuests";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -230,8 +231,42 @@ function Today() {
         />
       </div>
 
-      {/* Priority + weak topics */}
+      {/* Daily quests + weak topics */}
       <div className="grid gap-4 lg:grid-cols-2">
+        <DailyQuests />
+
+        {/* Weakest topics */}
+        <div className="rounded-2xl border bg-card p-5 shadow-sm">
+          <h2 className="flex items-center gap-2 text-base font-semibold">
+            <Target className="size-4 text-primary" />
+            Weakest topics
+          </h2>
+          <div className="mt-4 space-y-3">
+            {weak.map((t) => (
+              <Link key={t.id} to="/bank" search={{ topic: t.id } as never} className="block">
+                <TopicBar label={t.short} value={t.strength} tone={t.tone} />
+              </Link>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            <Link
+              to="/quest"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              Quest map <ArrowRight className="size-3" />
+            </Link>
+            <Link
+              to="/analytics"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              Full analytics <ArrowRight className="size-3" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Priority review */}
+      <div className="grid gap-4">
         {/* Today's review */}
         <div className="rounded-2xl border bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
@@ -259,27 +294,6 @@ function Today() {
               </Link>
             </Button>
           </div>
-        </div>
-
-        {/* Weakest topics */}
-        <div className="rounded-2xl border bg-card p-5 shadow-sm">
-          <h2 className="flex items-center gap-2 text-base font-semibold">
-            <Target className="size-4 text-primary" />
-            Weakest topics
-          </h2>
-          <div className="mt-4 space-y-3">
-            {weak.map((t) => (
-              <Link key={t.id} to="/bank" search={{ topic: t.id } as never} className="block">
-                <TopicBar label={t.short} value={t.strength} tone={t.tone} />
-              </Link>
-            ))}
-          </div>
-          <Link
-            to="/analytics"
-            className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-          >
-            Full analytics <ArrowRight className="size-3" />
-          </Link>
         </div>
       </div>
 

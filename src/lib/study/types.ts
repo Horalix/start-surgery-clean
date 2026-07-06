@@ -48,6 +48,10 @@ export interface Profile {
   bestExamScore: number | null;
   battlesWon: number;
   battlesPlayed: number;
+  /** current global consecutive-correct combo */
+  combo: number;
+  /** best combo ever reached */
+  bestCombo: number;
 }
 
 export interface SessionSummary {
@@ -105,6 +109,12 @@ export interface AppState {
   examAttempts: ExamAttempt[];
   flagged: Record<string, boolean>;
   notUnderstood: Record<string, boolean>;
+  /** achievement id → unlockedAt epoch ms */
+  achievements: Record<string, number>;
+  /** day key (YYYY-MM-DD) → claimed quest ids */
+  questClaims: Record<string, string[]>;
+  /** topic id → boss victories */
+  bossWins: Record<string, number>;
 }
 
 export interface GradeResult {
