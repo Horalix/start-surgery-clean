@@ -794,6 +794,38 @@ function PlayingRoom({
     });
   };
 
+  // Derived HP: starts at 100, each wrong answer chips away at your HP; opponent
+  // "attacks" via their correct answers.
+  const myHP = Math.max(
+    0,
+    100 - opponentAnswers /* nudged */ - opponentAnswers * 3 -
+      (answers.filter((a) => a.user_id === opponent?.user_id && a.correct).length * 8) -
+      (myAnswers.filter((a) => !a.correct).length * 5),
+  );
+  const oppHP = Math.max(
+    0,
+    100 -
+      (myAnswers.filter((a) => a.correct).length * 8) -
+      ((opponent ? answers.filter((a) => a.user_id === opponent.user_id && !a.correct).length : 0) * 5),
+  );
+
+  // Live action feed
+  const feed = useMemo(() => {
+    const items = answers
+      .slice()
+      .sort((a, b) => a.answered_at.localeCompare(b.answered_at))
+      .slice(-6)
+      .reverse();
+    return items.map((a) => {
+      const p = players.find((x) => x.user_id === a.user_id);
+      const label = p ? (p.user_id === userId ? "You" : p.display_name) : "Player";
+      const idx = answers
+        .filter((x) => x.user_id === a.user_id && x.answered_at <= a.answered_at)
+        .length;
+      return { id: a.id, label, idx, ms: a.ms, correct: a.correct };
+    });
+  }, [answers, players, userId]);
+
   // ── Result view ──
   if (iFinished) {
     const meScore = me?.score ?? 0;
@@ -822,6 +854,47 @@ function PlayingRoom({
           }
         />
 
+        {allFinished && me && (
+          <div className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-card p-8 text-center shadow-lg">
+            <div className="flex items-center justify-center">
+              <div className={cn("flex size-32 items-center justify-center", won && "battle-victory")}>
+                <Companion
+                  level={levelProgress(getState().profile.xp).level}
+                  size={120}
+                  character={(won ? me.character : opponent?.character) ?? undefined}
+                  mood={won ? "happy" : "sad"}
+                />
+              </div>
+            </div>
+            <h2 className="mt-3 text-3xl font-black tracking-tight">
+              {draw ? "Draw" : won ? "Victory!" : "Defeated"}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {won
+                ? `+30 XP · You bested ${opponent?.display_name ?? "your opponent"}`
+                : draw
+                  ? "A close match — tied scores."
+                  : `+5 XP for playing · ${opponent?.display_name ?? "Opponent"} took this round`}
+            </p>
+            {won && (
+              <>
+                {Array.from({ length: 22 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="confetti-piece"
+                    style={{
+                      left: `${(i * 4.5) % 100}%`,
+                      top: "-10px",
+                      background: ["#f2c94c", "#22d3ee", "#ff5ac9", "#a8fdff", "#c78cff"][i % 5],
+                      animationDelay: `${(i % 6) * 0.1}s`,
+                    }}
+                  />
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
         <div className="grid gap-3 sm:grid-cols-2">
           <StatCard
             label={`${displayName} (you)`}
@@ -844,22 +917,11 @@ function PlayingRoom({
             {myAnswers.map((a, i) => {
               const q = questions.find((qq) => qq.id === a.qid);
               return (
-                <div
-                  key={a.id}
-                  className="flex items-center gap-3 rounded-lg border bg-background p-2.5"
-                >
-                  <span className="w-7 shrink-0 text-xs font-bold text-muted-foreground">
-                    #{i + 1}
-                  </span>
-                  {a.correct ? (
-                    <Check className="size-4 text-success" />
-                  ) : (
-                    <X className="size-4 text-destructive" />
-                  )}
+                <div key={a.id} className="flex items-center gap-3 rounded-lg border bg-background p-2.5">
+                  <span className="w-7 shrink-0 text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                  {a.correct ? <Check className="size-4 text-success" /> : <X className="size-4 text-destructive" />}
                   <span className="min-w-0 flex-1 truncate text-sm">{q?.stem ?? a.qid}</span>
-                  <span className="hidden text-xs text-muted-foreground sm:inline">
-                    {fmtSeconds(a.ms)}
-                  </span>
+                  <span className="hidden text-xs text-muted-foreground sm:inline">{fmtSeconds(a.ms)}</span>
                 </div>
               );
             })}
@@ -882,22 +944,74 @@ function PlayingRoom({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Question {myIdx + 1}/{questions.length}
+            Round {myIdx + 1} / {questions.length}
           </div>
           <h1 className="text-xl font-bold">
             {room.mode === "accuracy" ? "Accuracy duel" : "Speed duel"} · {room.code}
           </h1>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
-            You {me?.correct_count ?? 0}
-          </span>
-          {opponent && (
-            <span className="rounded-full bg-muted px-3 py-1 text-sm font-bold text-muted-foreground">
-              {opponent.display_name} {opponent.correct_count} ({opponentAnswers}/{questions.length})
-            </span>
+      </div>
+
+      {/* ── Arena ────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl border-2 bg-gradient-to-b from-slate-900 via-indigo-950 to-black p-4 shadow-lg sm:p-6">
+        {/* Ground line */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-16 opacity-40"
+          style={{ background: "radial-gradient(ellipse at center, rgba(255,255,255,0.15), transparent 70%)" }}
+        />
+        <div className="relative grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+          {/* Me */}
+          <ArenaFighter
+            name={`${displayName} (you)`}
+            hp={myHP}
+            correct={me?.correct_count ?? 0}
+            total={questions.length}
+            character={me?.character ?? undefined}
+            fx={myFx}
+            side="left"
+            flash={myFx === "shake"}
+          />
+          <div className="relative flex flex-col items-center justify-center pb-6 text-white/80">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-white/60">VS</div>
+            {slashOn && (
+              <span
+                className={cn(
+                  "battle-slash absolute left-1/2 top-1/2 h-1 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full",
+                  slashOn === "me->opp" ? "bg-primary" : "bg-destructive",
+                )}
+              />
+            )}
+          </div>
+          {opponent ? (
+            <ArenaFighter
+              name={opponent.display_name}
+              hp={oppHP}
+              correct={opponent.correct_count}
+              total={questions.length}
+              character={opponent.character ?? undefined}
+              fx={oppFx}
+              side="right"
+              flash={oppFx === "shake"}
+            />
+          ) : (
+            <div className="pb-4 text-right text-xs text-white/60">Waiting for opponent…</div>
           )}
         </div>
+
+        {/* Live feed */}
+        {feed.length > 0 && (
+          <div className="mt-4 max-h-24 overflow-hidden border-t border-white/10 pt-2">
+            <ul className="space-y-1 text-[11px] text-white/80">
+              {feed.map((f) => (
+                <li key={f.id} className="flex items-center gap-2">
+                  {f.correct ? <Check className="size-3 text-emerald-400" /> : <X className="size-3 text-rose-400" />}
+                  <span className="font-semibold">{f.label}</span>
+                  <span className="text-white/50">answered in {fmtSeconds(f.ms)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
@@ -962,3 +1076,51 @@ function PlayingRoom({
     </div>
   );
 }
+
+function ArenaFighter({
+  name,
+  hp,
+  correct,
+  total,
+  character,
+  fx,
+  side,
+  flash,
+}: {
+  name: string;
+  hp: number;
+  correct: number;
+  total: number;
+  character: CharacterCustomization | undefined;
+  fx: "lunge" | "shake" | null;
+  side: "left" | "right";
+  flash: boolean;
+}) {
+  const lungeClass = fx === "lunge" ? (side === "left" ? "battle-lunge-left" : "battle-lunge-right") : "";
+  const shakeClass = fx === "shake" ? "battle-shake" : "";
+  return (
+    <div className={cn("relative flex flex-col gap-2", side === "right" && "items-end", flash && "battle-flash-red rounded-xl")}>
+      <div className={cn("relative flex", side === "left" ? "justify-start" : "justify-end")}>
+        <div className={cn("relative", lungeClass, shakeClass)} style={{ transform: side === "right" ? "scaleX(-1)" : undefined }}>
+          <Companion level={12} size={96} character={character} mood={fx === "shake" ? "sad" : "idle"} />
+        </div>
+      </div>
+      <div className={cn("w-full max-w-[220px]", side === "right" && "ml-auto")}>
+        <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-white">
+          <span className="flex items-center gap-1"><Heart className="size-3 text-rose-400" /> {name}</span>
+          <span className="tabular-nums text-white/70">{correct}/{total}</span>
+        </div>
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-white/20">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              hp > 60 ? "bg-emerald-400" : hp > 30 ? "bg-amber-400" : "bg-rose-500",
+            )}
+            style={{ width: `${hp}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
