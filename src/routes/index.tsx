@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Play,
@@ -12,14 +12,15 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { useStore } from "@/lib/study/store";
-import { getState } from "@/lib/study/store";
+import { useStore, getState } from "@/lib/study/store";
 import { readiness, weakestTopics, topicStats } from "@/lib/study/selectors";
 import { levelProgress, stageForLevel, nextStage } from "@/lib/study/companion";
+import { withDerivedTier } from "@/lib/study/character-progression";
 import { Companion } from "@/components/study/Companion";
 import { StatCard, Ring, TopicBar } from "@/components/study/primitives";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({ component: Today });
 
@@ -30,10 +31,10 @@ const READY_META = {
 } as const;
 
 function Today() {
-  // subscribe to progress + profile so the dashboard recomputes live
   const tick = useStore((s) => s.profile.xp + Object.keys(s.progress).length);
   const name = useStore((s) => s.profile.name);
   const xp = useStore((s) => s.profile.xp);
+  const character = useStore((s) => s.character);
 
   const data = useMemo(() => {
     const s = getState();
@@ -41,11 +42,12 @@ function Today() {
       r: readiness(s),
       weak: weakestTopics(s, 4),
       stats: topicStats(s),
+      resolvedCharacter: withDerivedTier(s.character, s),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick]);
+  }, [tick, character]);
 
-  const { r, weak } = data;
+  const { r, weak, resolvedCharacter } = data;
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
   const next = nextStage(lp.level);
@@ -53,14 +55,60 @@ function Today() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
+  // Level-up burst + toast
+  const prevLevelRef = useRef<number | null>(null);
+  const prevXpRef = useRef<number>(xp);
+  const [burst, setBurst] = useState(false);
+  const [xpPulse, setXpPulse] = useState(false);
+  useEffect(() => {
+    if (prevLevelRef.current == null) {
+      prevLevelRef.current = lp.level;
+      return;
+    }
+    if (lp.level > prevLevelRef.current) {
+      setBurst(true);
+      toast.success(`Level up! You reached Level ${lp.level} — ${stageForLevel(lp.level).name}.`);
+      setTimeout(() => setBurst(false), 950);
+    }
+    prevLevelRef.current = lp.level;
+  }, [lp.level]);
+
+  useEffect(() => {
+    if (xp > prevXpRef.current) {
+      setXpPulse(true);
+      setTimeout(() => setXpPulse(false), 520);
+    }
+    prevXpRef.current = xp;
+  }, [xp]);
+
+
   return (
     <div className="space-y-6">
       {/* Hero */}
       <div className="overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-card p-5 shadow-sm sm:p-7">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-background/70 shadow-inner">
-              <Companion level={lp.level} size={72} />
+            <div className={cn(
+              "relative flex size-24 shrink-0 items-center justify-center rounded-2xl bg-background/70 shadow-inner",
+              burst && "companion-levelup",
+            )}>
+              <Companion level={lp.level} size={80} character={resolvedCharacter} mood={burst ? "happy" : "idle"} />
+              {burst && (
+                <>
+                  {["#f2c94c","#22d3ee","#ff5ac9","#a8fdff","#c78cff","#ffd23a"].map((c, i) => (
+                    <span
+                      key={i}
+                      className="confetti-piece"
+                      style={{
+                        left: `${10 + i * 14}%`,
+                        top: "0",
+                        background: c,
+                        animationDelay: `${i * 0.08}s`,
+                      }}
+                    />
+                  ))}
+                </>
+              )}
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
@@ -70,17 +118,24 @@ function Today() {
                 Let's master the Surgery I final
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {stage.title} · Level {lp.level}
+                {stage.title} · <span className={cn("font-semibold text-foreground", xpPulse && "xp-pulse inline-block")}>Level {lp.level}</span>
+                <span className="text-muted-foreground/70"> · {lp.into}/{lp.need} XP</span>
                 {next && (
                   <span className="text-muted-foreground/70">
                     {" "}
-                    · {next.minLevel - lp.level} level{next.minLevel - lp.level === 1 ? "" : "s"} to{" "}
-                    {next.name}
+                    · {next.minLevel - lp.level} to {next.name}
                   </span>
                 )}
               </p>
+              <div className="mt-2 h-1.5 w-56 max-w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${lp.pct}%` }}
+                />
+              </div>
             </div>
           </div>
+
 
           <div className="flex items-center gap-4">
             <Ring

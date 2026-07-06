@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { UserCog, Save, RotateCcw } from "lucide-react";
+import { UserCog, Save, RotateCcw, Lock, Sparkles } from "lucide-react";
 import { PageTitle } from "@/components/study/primitives";
 import { Companion } from "@/components/study/Companion";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useStore, setCharacter } from "@/lib/study/store";
+import { useStore, setCharacter, getState } from "@/lib/study/store";
 import { levelProgress, stageForLevel } from "@/lib/study/companion";
+import { computeTier, withDerivedTier } from "@/lib/study/character-progression";
 import type { CharacterCustomization } from "@/lib/study/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -40,17 +41,18 @@ const ANGEL_EMAILS = ["kerim.sabic@gmail.com"];
 const ANGEL_NAMES = ["kerim"];
 const DEVIL_EMAILS = ["amrudin.naser@gmail.com"];
 const DEVIL_NAMES = ["amrudin"];
-const SHARED_EMAILS = ["kerim.sabic@gmail.com", "amrudin.naser@gmail.com"];
-const SHARED_NAMES = ["kerim", "amrudin"];
+const OWNER_EMAILS = ["kerim.sabic@gmail.com", "amrudin.naser@gmail.com"];
+const OWNER_NAMES = ["kerim", "amrudin"];
 
 type Special = NonNullable<CharacterCustomization["special"]>;
-const SPECIAL_FORMS: { key: Special; emoji: string; label: string; sub: string }[] = [
-  { key: "angel", emoji: "😇", label: "Angel", sub: "Celestial Healer" },
-  { key: "devil", emoji: "😈", label: "Devil", sub: "Shadow Surgeon" },
+
+const LEGENDARY: { key: Special; emoji: string; label: string; sub: string }[] = [
   { key: "phoenix", emoji: "🔥", label: "Phoenix", sub: "Reborn in Flame" },
   { key: "void", emoji: "🌌", label: "Void", sub: "Cosmic Wanderer" },
   { key: "titan", emoji: "⚔️", label: "Titan", sub: "Golden Warrior" },
-  { key: "professor", emoji: "🎙️", label: "Professor", sub: "100% Exam Boss" },
+  { key: "reaper", emoji: "🗡️", label: "Shadow Reaper", sub: "Violet Scythe" },
+  { key: "oracle", emoji: "🔮", label: "Celestial Oracle", sub: "Runic Halo" },
+  { key: "samurai", emoji: "🤖", label: "Cyber Samurai", sub: "Neon Blade" },
 ];
 
 function CharacterPage() {
@@ -58,6 +60,7 @@ function CharacterPage() {
   const bestExamScore = useStore((s) => s.profile.bestExamScore);
   const profileName = useStore((s) => s.profile.name);
   const saved = useStore((s) => s.character);
+  const battlesWon = useStore((s) => s.profile.battlesWon);
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
 
@@ -85,19 +88,13 @@ function CharacterPage() {
   const emailLc = (email ?? "").trim().toLowerCase();
   const canAngel = ANGEL_EMAILS.includes(emailLc) || ANGEL_NAMES.some((n) => nameLc.includes(n));
   const canDevil = DEVIL_EMAILS.includes(emailLc) || DEVIL_NAMES.some((n) => nameLc.includes(n));
-  const canShared =
-    SHARED_EMAILS.includes(emailLc) || SHARED_NAMES.some((n) => nameLc.includes(n));
+  const isOwner = OWNER_EMAILS.includes(emailLc) || OWNER_NAMES.some((n) => nameLc.includes(n));
   const displayBestExamScore = Math.max(bestExamScore ?? 0, verifiedBestExamScore ?? 0);
   const hasPerfectExam = (verifiedBestExamScore ?? 0) >= 74;
 
-  const availableSpecials = SPECIAL_FORMS.filter((f) => {
-    if (f.key === "angel") return canAngel;
-    if (f.key === "devil") return canDevil;
-    if (f.key === "professor") return hasPerfectExam;
-    return canShared;
-  });
-
-  const lockedExamForm = !hasPerfectExam;
+  const tierStatus = computeTier(getState());
+  // Preview draft with derived tier so Angel/Devil show their current ascension.
+  const previewCharacter = withDerivedTier(draft, getState());
 
   const palette = { ...stage.palette, ...(draft.palette ?? {}) };
   const props = { ...stage.props, ...(draft.props ?? {}) };
@@ -110,8 +107,10 @@ function CharacterPage() {
     setDraft((d) => ({ ...d, special: d.special === s ? undefined : s }));
 
   const save = async () => {
-    setCharacter(draft);
-    toast.success("Character saved locally");
+    // Bake the derived tier into what we persist so it flows to server + battle snapshots.
+    const withTier = withDerivedTier(draft, getState()) ?? draft;
+    setCharacter(withTier);
+    toast.success("Character saved");
     setSavingCloud(true);
     try {
       const { data } = await supabase.auth.getUser();
@@ -125,7 +124,7 @@ function CharacterPage() {
             {
               user_id: data.user.id,
               display_name: displayName,
-              character: draft as never,
+              character: withTier as never,
               best_exam_score: verifiedBestExamScore ?? 0,
             } as never,
             { onConflict: "user_id" },
@@ -144,7 +143,7 @@ function CharacterPage() {
     <div className="space-y-6">
       <PageTitle
         title="Customize character"
-        subtitle="Adjust your surgeon's look. Changes appear across the app and on the leaderboard."
+        subtitle="Your surgeon appears on Today, on the leaderboard, and in every battle."
         icon={<UserCog className="size-5" />}
       />
 
@@ -152,10 +151,19 @@ function CharacterPage() {
         <section className="rounded-2xl border bg-card p-6 shadow-sm">
           <div className="flex flex-col items-center gap-3">
             <div className="flex size-40 items-center justify-center rounded-2xl bg-primary/10">
-              <Companion level={lp.level} size={140} character={draft} />
+              <Companion level={lp.level} size={140} character={previewCharacter} />
             </div>
             <div className="text-center">
-              <div className="text-sm font-semibold">{stage.title}</div>
+              <div className="text-sm font-semibold">
+                {previewCharacter?.special
+                  ? previewCharacter.special.charAt(0).toUpperCase() + previewCharacter.special.slice(1)
+                  : stage.title}
+                {(previewCharacter?.special === "angel" || previewCharacter?.special === "devil") && (
+                  <span className="ml-1 text-primary">
+                    · Tier {previewCharacter.tier ?? 1}
+                  </span>
+                )}
+              </div>
               <div className="text-xs text-muted-foreground">Level {lp.level}</div>
             </div>
           </div>
@@ -170,25 +178,116 @@ function CharacterPage() {
         </section>
 
         <section className="space-y-6">
+          {/* Owner Angel/Devil ascension panel */}
+          {(canAngel || canDevil) && (
+            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4">
+              <Label className="mb-1 flex items-center gap-2 text-sm font-semibold">
+                <Sparkles className="size-4" /> Signature form ascension
+              </Label>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Your {canAngel ? "Angel" : "Devil"} form transforms as you grind. Current tier:{" "}
+                <span className="font-bold text-foreground">Tier {tierStatus.tier}</span>.
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3].map((t) => {
+                  const unlocked = tierStatus.tier >= t;
+                  return (
+                    <div
+                      key={t}
+                      className={cn(
+                        "flex flex-col items-center gap-1 rounded-xl border-2 p-2",
+                        unlocked ? "border-primary bg-primary/10" : "border-border opacity-60 grayscale",
+                      )}
+                    >
+                      <div className="flex size-16 items-center justify-center">
+                        <Companion
+                          level={lp.level}
+                          size={56}
+                          character={{ special: canAngel ? "angel" : "devil", tier: t as 1 | 2 | 3 }}
+                          bob={false}
+                        />
+                      </div>
+                      <div className="text-xs font-bold">Tier {t}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {canAngel
+                          ? t === 1 ? "Cherub" : t === 2 ? "Seraph" : "Archangel"
+                          : t === 1 ? "Imp" : t === 2 ? "Fiend" : "Archdemon"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {tierStatus.nextTier && (
+                <div className="mt-3 rounded-lg border bg-background/60 p-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Missions to Tier {tierStatus.nextTier}
+                  </div>
+                  <div className="space-y-2">
+                    <MissionRow
+                      label={`Reach Level ${tierStatus.levelForNext}`}
+                      value={Math.min(1, lp.level / (tierStatus.levelForNext ?? 1))}
+                      progressLabel={`Lv ${lp.level}/${tierStatus.levelForNext}`}
+                      done={lp.level >= (tierStatus.levelForNext ?? 0)}
+                    />
+                    {tierStatus.missionsForNext.map((m) => (
+                      <MissionRow
+                        key={m.key}
+                        label={m.label}
+                        value={m.progress}
+                        progressLabel={m.progressLabel}
+                        done={m.complete}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {canAngel && (
+                  <button
+                    onClick={() => setSpecial("angel")}
+                    className={cn(
+                      "rounded-lg border-2 px-3 py-2 text-xs font-semibold",
+                      draft.special === "angel" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent",
+                    )}
+                  >
+                    😇 Wear Angel form
+                  </button>
+                )}
+                {canDevil && (
+                  <button
+                    onClick={() => setSpecial("devil")}
+                    className={cn(
+                      "rounded-lg border-2 px-3 py-2 text-xs font-semibold",
+                      draft.special === "devil" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent",
+                    )}
+                  >
+                    😈 Wear Devil form
+                  </button>
+                )}
+                {draft.special && (
+                  <button
+                    onClick={() => setSpecial(undefined)}
+                    className="rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
+                  >
+                    Remove form
+                  </button>
+                )}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Battles won: {battlesWon} · Best exam: {displayBestExamScore}/74
+              </p>
+            </div>
+          )}
+
           <Group label="Skin tone">
             {SKIN.map((c) => (
-              <Swatch
-                key={c}
-                color={c}
-                active={palette.skin === c}
-                onClick={() => patchPalette({ skin: c })}
-              />
+              <Swatch key={c} color={c} active={palette.skin === c} onClick={() => patchPalette({ skin: c })} />
             ))}
           </Group>
 
           <Group label="Hair color">
             {HAIR.map((c) => (
-              <Swatch
-                key={c}
-                color={c}
-                active={palette.hair === c}
-                onClick={() => patchPalette({ hair: c })}
-              />
+              <Swatch key={c} color={c} active={palette.hair === c} onClick={() => patchPalette({ hair: c })} />
             ))}
           </Group>
 
@@ -206,10 +305,7 @@ function CharacterPage() {
                       active ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
                     )}
                   >
-                    <span
-                      className="size-4 rounded-sm border"
-                      style={{ backgroundColor: s.scrub }}
-                    />
+                    <span className="size-4 rounded-sm border" style={{ backgroundColor: s.scrub }} />
                     {s.name}
                   </button>
                 );
@@ -219,12 +315,7 @@ function CharacterPage() {
 
           <Group label="Accent">
             {ACCENT.map((c) => (
-              <Swatch
-                key={c}
-                color={c}
-                active={palette.accent === c}
-                onClick={() => patchPalette({ accent: c })}
-              />
+              <Swatch key={c} color={c} active={palette.accent === c} onClick={() => patchPalette({ accent: c })} />
             ))}
           </Group>
 
@@ -239,9 +330,7 @@ function CharacterPage() {
                     onClick={() => toggleProp(p.key)}
                     className={cn(
                       "rounded-lg border-2 px-3 py-2 text-xs font-medium transition-colors",
-                      on
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:bg-accent",
+                      on ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent",
                     )}
                   >
                     {on ? "✓ " : ""}
@@ -250,71 +339,106 @@ function CharacterPage() {
                 );
               })}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Some gear also unlocks automatically as you level up.
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">Some gear also unlocks automatically as you level up.</p>
           </div>
 
-          {availableSpecials.length > 0 && (
+          {/* Legendary unlocks — Kerim & Amrudin exclusive */}
+          {isOwner && (
             <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4">
-              <Label className="mb-1 block text-sm font-semibold">
-                ✨ Legendary forms{" "}
-                <span className="ml-1 text-xs font-normal text-muted-foreground">
-                  (unlocked for you)
-                </span>
-              </Label>
+              <Label className="mb-1 block text-sm font-semibold">✨ Legendary forms</Label>
               <p className="mb-3 text-xs text-muted-foreground">
-                Full custom skins that replace your surgeon. Everyone will see them everywhere.
+                Six full custom skins. Everyone sees them in battle when you wear one.
               </p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {availableSpecials.map((f) => {
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {LEGENDARY.map((f) => {
                   const active = draft.special === f.key;
                   return (
                     <button
                       key={f.key}
                       onClick={() => setSpecial(f.key)}
                       className={cn(
-                        "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
-                        active
-                          ? "border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30"
-                          : "border-border hover:bg-accent",
+                        "group flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all",
+                        active ? "border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30" : "border-border hover:bg-accent",
                       )}
                     >
-                      <span className="text-lg">{f.emoji}</span>
-                      <span className="text-sm font-bold leading-none">{f.label}</span>
-                      <span className="text-[11px] text-muted-foreground">{f.sub}</span>
+                      <div className="flex size-16 items-center justify-center rounded-lg bg-background/60">
+                        <Companion level={lp.level} size={56} character={{ special: f.key }} bob={false} />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold leading-none">{f.emoji} {f.label}</div>
+                        <div className="mt-0.5 text-[10px] text-muted-foreground">{f.sub}</div>
+                      </div>
                     </button>
                   );
                 })}
               </div>
-              {draft.special && (
-                <button
-                  onClick={() => setSpecial(undefined)}
-                  className="mt-3 rounded-lg border-2 border-border px-3 py-2 text-xs font-medium hover:bg-accent"
-                >
-                  Remove legendary form
-                </button>
-              )}
             </div>
           )}
 
-          {lockedExamForm && (
+          {!hasPerfectExam && (
             <div className="rounded-2xl border-2 border-dashed border-border bg-card p-4">
-              <Label className="mb-1 block text-sm font-semibold">🔒 Perfect exam form</Label>
+              <Label className="mb-1 flex items-center gap-1.5 text-sm font-semibold">
+                <Lock className="size-3.5" /> Perfect exam form
+              </Label>
               <div className="flex items-center gap-4">
                 <div className="flex size-20 shrink-0 items-center justify-center rounded-xl bg-primary/10 opacity-70 grayscale">
-                  <Companion level={lp.level} size={70} character={{ special: "professor" }} />
+                  <Companion level={lp.level} size={70} character={{ special: "professor" }} bob={false} />
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-bold">Professor · 100% Exam Boss</div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Locked until you score 74/74 on Exam Simulation. Best score: {displayBestExamScore}/74.
+                    Unlocks at 74/74 on Exam Simulation. Best: {displayBestExamScore}/74.
                   </p>
                 </div>
               </div>
             </div>
           )}
+
+          {hasPerfectExam && (
+            <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-transparent p-4">
+              <Label className="mb-1 block text-sm font-semibold">🎓 Professor unlocked</Label>
+              <button
+                onClick={() => setSpecial("professor")}
+                className={cn(
+                  "mt-2 flex items-center gap-3 rounded-lg border-2 p-2",
+                  draft.special === "professor" ? "border-primary bg-primary/10" : "border-border",
+                )}
+              >
+                <div className="flex size-14 items-center justify-center rounded-lg bg-background/60">
+                  <Companion level={lp.level} size={50} character={{ special: "professor" }} bob={false} />
+                </div>
+                <span className="text-sm font-semibold">Wear Professor form</span>
+              </button>
+            </div>
+          )}
         </section>
+      </div>
+    </div>
+  );
+}
+
+function MissionRow({
+  label,
+  value,
+  progressLabel,
+  done,
+}: {
+  label: string;
+  value: number;
+  progressLabel: string;
+  done: boolean;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-xs">
+        <span className={cn("font-medium", done && "text-success")}>{done ? "✓ " : ""}{label}</span>
+        <span className="tabular-nums text-muted-foreground">{progressLabel}</span>
+      </div>
+      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className={cn("h-full rounded-full transition-all", done ? "bg-success" : "bg-primary")}
+          style={{ width: `${Math.min(100, value * 100)}%` }}
+        />
       </div>
     </div>
   );
@@ -329,15 +453,7 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Swatch({
-  color,
-  active,
-  onClick,
-}: {
-  color: string;
-  active: boolean;
-  onClick: () => void;
-}) {
+function Swatch({ color, active, onClick }: { color: string; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}

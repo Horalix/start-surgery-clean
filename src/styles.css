@@ -266,4 +266,141 @@
   .companion-sad {
     animation: companion-sad 0.6s ease-in-out;
   }
+
+  /* ── Legendary particle animations ─────────────────────────── */
+  @keyframes companion-sparkle {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    50% { opacity: 0.35; transform: translateY(-4%); }
+  }
+  .companion-sparkle-slow > * {
+    animation: companion-sparkle 2.8s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .companion-sparkle-slow > *:nth-child(2) { animation-delay: 0.4s; }
+  .companion-sparkle-slow > *:nth-child(3) { animation-delay: 0.8s; }
+  .companion-sparkle-slow > *:nth-child(4) { animation-delay: 1.2s; }
+  .companion-sparkle-slow > *:nth-child(5) { animation-delay: 1.6s; }
+  .companion-sparkle-slow > *:nth-child(6) { animation-delay: 2.0s; }
+
+  @keyframes companion-ember-rise {
+    0% { opacity: 0.9; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-14%); }
+  }
+  .companion-ember > * {
+    animation: companion-ember-rise 1.4s ease-out infinite;
+    transform-origin: center;
+  }
+  .companion-ember > *:nth-child(2) { animation-delay: 0.35s; }
+  .companion-ember > *:nth-child(3) { animation-delay: 0.7s; }
+  .companion-ember > *:nth-child(4) { animation-delay: 1.05s; }
+  .companion-ember > *:nth-child(5) { animation-delay: 0.5s; }
+  .companion-ember > *:nth-child(6) { animation-delay: 0.9s; }
+
+  @keyframes companion-drift {
+    0%, 100% { transform: translateY(0); opacity: 0.85; }
+    50% { transform: translateY(-8%); opacity: 0.55; }
+  }
+  .companion-drift > * {
+    animation: companion-drift 3.6s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .companion-drift > *:nth-child(2) { animation-delay: 0.6s; }
+  .companion-drift > *:nth-child(3) { animation-delay: 1.2s; }
+  .companion-drift > *:nth-child(4) { animation-delay: 1.8s; }
+  .companion-drift > *:nth-child(5) { animation-delay: 2.4s; }
+  .companion-drift > *:nth-child(6) { animation-delay: 3.0s; }
+
+  @keyframes companion-orbit {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .companion-orbit {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: companion-orbit 8s linear infinite;
+  }
+
+  @keyframes companion-scan {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.35; }
+  }
+  .companion-scan > * {
+    animation: companion-scan 0.9s steps(3, end) infinite;
+  }
+
+  /* ── Level-up burst on the Today hero companion ─────────────── */
+  @keyframes companion-levelup {
+    0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(var(--primary-rgb, 43, 179, 163), 0)); }
+    30% { transform: scale(1.18); filter: drop-shadow(0 0 12px color-mix(in oklab, var(--primary) 80%, transparent)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+  }
+  .companion-levelup {
+    animation: companion-levelup 0.9s ease-out;
+  }
+
+  @keyframes xp-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+  .xp-pulse {
+    animation: xp-pulse 0.5s ease-out;
+  }
+
+  /* ── Battle arena FX ─────────────────────────────────────────── */
+  @keyframes battle-lunge {
+    0% { transform: translateX(0); }
+    35% { transform: translateX(24%); }
+    100% { transform: translateX(0); }
+  }
+  .battle-lunge-left { animation: battle-lunge 0.6s ease-out; }
+  @keyframes battle-lunge-right {
+    0% { transform: translateX(0); }
+    35% { transform: translateX(-24%); }
+    100% { transform: translateX(0); }
+  }
+  .battle-lunge-right { animation: battle-lunge-right 0.6s ease-out; }
+
+  @keyframes battle-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6%); }
+    40% { transform: translateX(6%); }
+    60% { transform: translateX(-4%); }
+    80% { transform: translateX(4%); }
+  }
+  .battle-shake { animation: battle-shake 0.5s ease-in-out; }
+
+  @keyframes battle-slash {
+    0% { opacity: 0; transform: scaleX(0) rotate(-25deg); }
+    30% { opacity: 1; transform: scaleX(1) rotate(-25deg); }
+    100% { opacity: 0; transform: scaleX(1) rotate(-25deg); }
+  }
+  .battle-slash { animation: battle-slash 0.5s ease-out; transform-origin: left center; }
+
+  @keyframes battle-flash-red {
+    0%, 100% { background-color: transparent; }
+    30% { background-color: color-mix(in oklab, var(--destructive) 45%, transparent); }
+  }
+  .battle-flash-red { animation: battle-flash-red 0.4s ease-in-out; }
+
+  @keyframes battle-victory {
+    0% { transform: translateY(0) rotate(0); }
+    25% { transform: translateY(-10%) rotate(-6deg); }
+    50% { transform: translateY(0) rotate(0); }
+    75% { transform: translateY(-6%) rotate(6deg); }
+    100% { transform: translateY(0) rotate(0); }
+  }
+  .battle-victory { animation: battle-victory 1.4s ease-in-out infinite; }
+
+  @keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+    100% { transform: translateY(120px) rotate(360deg); opacity: 0; }
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 6px;
+    height: 10px;
+    animation: confetti-fall 1.8s ease-in forwards;
+  }
 }
+

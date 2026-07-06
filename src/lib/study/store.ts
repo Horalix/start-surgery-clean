@@ -69,7 +69,6 @@ function persist() {
   }
 }
 
-/** Load from localStorage (client only). Safe to call multiple times. */
 export function hydrate() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
@@ -84,7 +83,6 @@ export function hydrate() {
   } catch {
     /* corrupt — keep default */
   }
-  // apply theme immediately
   applyThemeClass(state.settings.theme);
   emit();
 }
@@ -144,16 +142,20 @@ export function setName(name: string) {
 }
 
 // ── XP + streak ──────────────────────────────────────────────────────────────
-function bumpStreak(profile: AppState["profile"]): AppState["profile"] {
+function bumpStreak(profile: AppState["profile"]): { profile: AppState["profile"]; bonus: number } {
   const today = todayKey();
-  if (profile.lastActiveDay === today) return profile;
+  if (profile.lastActiveDay === today) return { profile, bonus: 0 };
   let streakDays = 1;
   if (profile.lastActiveDay) {
     const prev = new Date(profile.lastActiveDay);
     const diff = Math.round((Date.parse(today) - prev.getTime()) / 86400000);
     streakDays = diff === 1 ? profile.streakDays + 1 : 1;
   }
-  return { ...profile, lastActiveDay: today, streakDays };
+  // +5 XP first activity of the day
+  return {
+    profile: { ...profile, lastActiveDay: today, streakDays, xp: profile.xp + 5 },
+    bonus: 5,
+  };
 }
 
 // ── Answering ────────────────────────────────────────────────────────────────
@@ -172,14 +174,17 @@ export function recordAnswer(input: RecordAnswerInput): QuestionProgress {
   set((s) => {
     const prev = s.progress[qid] ?? emptyProgress(qid);
     updated = schedule(prev, { correct, confidence, ms, now, selected });
+    // Tightened XP economy — real answers matter, guessing barely does.
     const gained = correct
       ? confidence === "certain"
-        ? 12
+        ? 10
         : confidence === "confident"
-          ? 10
-          : 8
-      : 3;
-    const profile = bumpStreak({ ...s.profile, xp: s.profile.xp + gained });
+          ? 8
+          : confidence === "unsure"
+            ? 6
+            : 4
+      : 1;
+    const { profile } = bumpStreak({ ...s.profile, xp: s.profile.xp + gained });
     return { ...s, progress: { ...s.progress, [qid]: updated }, profile };
   });
   return updated;
@@ -199,10 +204,17 @@ export function logExam(attempt: Omit<ExamAttempt, "at">) {
       s.profile.bestExamScore == null
         ? attempt.score
         : Math.max(s.profile.bestExamScore, attempt.score);
+    // Exam XP scales with actual score, capped high for a perfect run.
+    const examXp = Math.round(attempt.score * 3);
+    const { profile } = bumpStreak({
+      ...s.profile,
+      bestExamScore: best,
+      xp: s.profile.xp + examXp,
+    });
     return {
       ...s,
       examAttempts: [...s.examAttempts, at].slice(-50),
-      profile: bumpStreak({ ...s.profile, bestExamScore: best, xp: s.profile.xp + 40 }),
+      profile,
     };
   });
 }
@@ -214,7 +226,7 @@ export function recordBattle(won: boolean) {
       ...s.profile,
       battlesPlayed: s.profile.battlesPlayed + 1,
       battlesWon: s.profile.battlesWon + (won ? 1 : 0),
-      xp: s.profile.xp + (won ? 25 : 8),
+      xp: s.profile.xp + (won ? 30 : 5),
     },
   }));
 }
@@ -247,6 +259,19 @@ export function resetAllProgress() {
 }
 
 // ── Character customization ──────────────────────────────────────────────────
+const characterListeners = new Set<(c: CharacterCustomization | undefined) => void>();
+
 export function setCharacter(character: CharacterCustomization) {
   set((s) => sanitizeState({ ...s, character }));
+  for (const l of characterListeners) l(character);
+}
+
+/** Apply character from a remote source (cloud sync) without re-emitting a change. */
+export function applyRemoteCharacter(character: CharacterCustomization | undefined) {
+  set((s) => sanitizeState({ ...s, character }));
+}
+
+export function onCharacterChange(cb: (c: CharacterCustomization | undefined) => void) {
+  characterListeners.add(cb);
+  return () => characterListeners.delete(cb);
 }
