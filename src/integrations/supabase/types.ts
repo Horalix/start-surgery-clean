@@ -57,6 +57,7 @@ export type Database = {
       }
       battle_players: {
         Row: {
+          character: Json | null
           correct_count: number
           display_name: string
           joined_at: string
@@ -66,6 +67,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          character?: Json | null
           correct_count?: number
           display_name: string
           joined_at?: string
@@ -75,6 +77,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          character?: Json | null
           correct_count?: number
           display_name?: string
           joined_at?: string
