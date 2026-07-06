@@ -38,7 +38,9 @@ export const syncExamAttempt = createServerFn({ method: "POST" })
     const previous = existing?.best_exam_score ?? 0;
     const best = Math.max(previous, score);
 
-    await context.supabase.from("profiles").upsert(
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    await supabaseAdmin.from("profiles").upsert(
       {
         user_id: context.userId,
         display_name: displayName.slice(0, 40),
