@@ -24,7 +24,6 @@ export interface QuestionProgress {
   seen: number;
   correct: number;
   incorrect: number;
-  /** consecutive fully-correct recalls */
   streak: number;
   ease: number;
   intervalDays: number;
@@ -60,11 +59,10 @@ export interface SessionSummary {
 
 export interface ExamAttempt {
   at: number;
-  score: number; // 0..74 fully-correct
+  score: number;
   total: number;
   durationMs: number;
   timed: boolean;
-  /** per exam question: examNo -> correct */
   perQuestion: { examNo: number; qid: string; correct: boolean; confidence: Confidence | null }[];
 }
 
@@ -74,7 +72,16 @@ export interface Settings {
   examTimerMinutes: number;
 }
 
-export type SpecialCharacter = "angel" | "devil" | "phoenix" | "void" | "titan" | "professor";
+export type SpecialCharacter =
+  | "angel"
+  | "devil"
+  | "phoenix"
+  | "void"
+  | "titan"
+  | "professor"
+  | "reaper"
+  | "oracle"
+  | "samurai";
 
 export interface CharacterCustomization {
   palette?: Partial<{
@@ -92,6 +99,8 @@ export interface CharacterCustomization {
     loupe: boolean;
   }>;
   special?: SpecialCharacter;
+  /** Ascension tier for Angel/Devil (1..3). Derived from owner profile, snapshot to server. */
+  tier?: 1 | 2 | 3;
 }
 
 export interface AppState {
@@ -106,14 +115,10 @@ export interface AppState {
   notUnderstood: Record<string, boolean>;
 }
 
-
 export interface GradeResult {
   correct: boolean;
-  /** ids the student selected that were right */
   hits: string[];
-  /** ids the student selected that were wrong */
   wrongSelected: string[];
-  /** ids the student missed (should have selected) */
   missed: string[];
 }
 

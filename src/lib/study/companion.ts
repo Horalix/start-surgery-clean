@@ -3,7 +3,6 @@ export interface CompanionStage {
   name: string;
   title: string;
   minLevel: number;
-  /** palette keys used by the pixel renderer */
   palette: {
     skin: string;
     scrub: string;
@@ -11,16 +10,28 @@ export interface CompanionStage {
     hair: string;
     accent: string;
   };
-  /** accessories unlocked at this stage */
   props: { cap: boolean; mask: boolean; glasses: boolean; badge: boolean; loupe: boolean };
 }
 
 export type CompanionMood = "idle" | "happy" | "sad" | "thinking";
 
-export const XP_PER_LEVEL = 120;
+/**
+ * Quadratic XP curve. Cumulative XP required to reach a level:
+ *   xpForLevel(n) = 80 * n * (n - 1)
+ * L2=160, L3=480, L5=1600, L10=7200, L15=16800, L20=30400, L28=60480
+ * Each level costs 160 * (n - 1) more XP than the previous, so climbing feels earned.
+ */
+export function xpForLevel(n: number): number {
+  if (n <= 1) return 0;
+  return 80 * n * (n - 1);
+}
 
 export function levelForXp(xp: number): number {
-  return Math.floor(xp / XP_PER_LEVEL) + 1;
+  if (xp <= 0) return 1;
+  // Solve 80 * n * (n - 1) <= xp for n.
+  // n = floor((1 + sqrt(1 + xp/20)) / 2)
+  const n = Math.floor((1 + Math.sqrt(1 + xp / 20)) / 2);
+  return Math.max(1, n);
 }
 
 export function levelProgress(xp: number): {
@@ -30,8 +41,11 @@ export function levelProgress(xp: number): {
   pct: number;
 } {
   const level = levelForXp(xp);
-  const into = xp - (level - 1) * XP_PER_LEVEL;
-  return { level, into, need: XP_PER_LEVEL, pct: Math.round((into / XP_PER_LEVEL) * 100) };
+  const floor = xpForLevel(level);
+  const ceil = xpForLevel(level + 1);
+  const need = ceil - floor;
+  const into = xp - floor;
+  return { level, into, need, pct: Math.max(0, Math.min(100, Math.round((into / need) * 100))) };
 }
 
 export const STAGES: CompanionStage[] = [
@@ -53,7 +67,7 @@ export const STAGES: CompanionStage[] = [
     index: 1,
     name: "Intern",
     title: "Surgical Intern",
-    minLevel: 3,
+    minLevel: 4,
     palette: {
       skin: "#f0c9a4",
       scrub: "#6fc3e6",
@@ -67,7 +81,7 @@ export const STAGES: CompanionStage[] = [
     index: 2,
     name: "Resident",
     title: "Resident",
-    minLevel: 6,
+    minLevel: 8,
     palette: {
       skin: "#e9bd97",
       scrub: "#5aa9f2",
@@ -81,7 +95,7 @@ export const STAGES: CompanionStage[] = [
     index: 3,
     name: "Chief",
     title: "Chief Resident",
-    minLevel: 10,
+    minLevel: 13,
     palette: {
       skin: "#e9bd97",
       scrub: "#3f7ff0",
@@ -95,7 +109,7 @@ export const STAGES: CompanionStage[] = [
     index: 4,
     name: "Attending",
     title: "Attending Surgeon",
-    minLevel: 15,
+    minLevel: 19,
     palette: {
       skin: "#e3b48c",
       scrub: "#3457d5",
@@ -109,7 +123,7 @@ export const STAGES: CompanionStage[] = [
     index: 5,
     name: "Professor",
     title: "Professor of Surgery",
-    minLevel: 22,
+    minLevel: 28,
     palette: {
       skin: "#e3b48c",
       scrub: "#2d2f8f",
