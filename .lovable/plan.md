@@ -1,59 +1,111 @@
-## Plan
 
-### 1. Angel & Devil — full custom skins (as cool as possible)
+# Level up the game — v2
 
-Rewrite the `Companion` renderer so `character.special` completely replaces the base scrubs surgeon with a hand-crafted pixel character. Both skins render everywhere the avatar appears: `/character` preview, sidebar footer, header chip, and leaderboard.
+Six focused upgrades. Character JSON already exists on `profiles`; DB changes are just trigger allow-list + a small `character_missions` progress column.
 
-**Angel — "Celestial Healer"**
-- Flowing white + gold robe with a gold chest sash and gemstone clasp
-- Two large layered feathered wings (cream / white / soft gold shading)
-- Glowing halo floating above the head with a soft radial glow
-- Warm gold aura behind the whole character
-- Soft blonde hair, gentle blue eyes, calm smile
-- Subtle slow floating bob animation + faint sparkle particles
+## 1. Harder XP curve + real leveling feel
 
-**Devil — "Shadow Surgeon"**
-- Dark crimson + black hooded robe with jagged trim
-- Curled ram horns and pointed ears
-- Glowing red eyes with a soft red glow
-- Two bat wings behind (black with crimson membrane)
-- Small floating trident by the side
-- Dark ember aura + rising red particles behind the body
-- Slight menacing float animation
+Flat 120 XP/level → quadratic curve in `src/lib/study/companion.ts`:
+- `xpForLevel(n) = 80 * n * (n - 1)` cumulative (L2=160, L5=1600, L10=7200, L15=16800, L22=36960).
+- Rewrite `levelForXp` / `levelProgress` around it.
+- Bump stage minLevels (Sprout 1, Intern 4, Resident 8, Chief 13, Attending 19, Professor 28).
 
-Both:
-- Animated glow ring behind the avatar
-- Rendered at proper size in every avatar slot (not just the /character page)
+Tighten XP in `src/lib/study/store.ts`:
+- Correct: 4 / 6 / 8 / 10 by confidence (was 8–12); wrong: 1 (was 3).
+- Exam: `round(score * 3)` (was flat 40).
+- Battle: win 30, loss 5.
+- +5 once/day streak bonus.
 
-### 2. Restrict the skins — enforce on the server, not just the UI
+Level-up toast + refreshed progress ring on Today.
 
-Right now anyone could edit their `profiles.character` JSON in devtools and pick a skin. To make it truly exclusive but still visible to everyone:
+## 2. Character syncs across devices (mobile too)
 
-- Add a database trigger on `profiles` that inspects the incoming `character` JSON. If it sets `special = "angel"` and the user's email/display_name isn't on the angel allow-list, strip the field. Same for `devil`. The allow-list lives in the trigger (kerim.sabic@gmail.com / name contains "kerim" → angel; amrudin.naser@gmail.com / name contains "amrudin" → devil).
-- Same rule applied to `leaderboard_entries.character` so leaderboard rows can't sneak the skin in either.
-- Client-side UI still hides the "Secret forms" section from non-eligible users (nice UX), but the trigger is the real gate.
-- Everyone else's app renders whatever `special` value is stored — so if Kerim or Amrudin pick a skin, every player sees it on the leaderboard, in battle, everywhere.
+`profiles.character` JSON already exists. Add `src/lib/study/character-sync.ts`:
+- On `SIGNED_IN` (and initial session), fetch server character → merge into local store (server wins for that session).
+- Debounced upsert to `profiles` whenever `setCharacter` runs.
+- Register once in `__root.tsx` next to existing auth listener.
+- Trigger `enforce_special_character` still strips unauthorized skins server-side.
 
-### 3. Remove Google sign-in entirely
+## 3. Today page: live animated companion
 
-Since you're hosting on Netlify:
-- Delete the "Continue with Google" button and the `lovable` OAuth import from `/auth`.
-- Remove the divider and simplify the auth card to a clean email + password form.
+- Pass `character` from store into hero `<Companion />` in `src/routes/index.tsx` so the selected skin (Devil/Angel/Phoenix/Void/Titan/Professor + legendary tiers) shows.
+- Idle-breathe + blink loop in `Companion.tsx` (CSS + SVG `<animate>`).
+- One-shot "happy bounce" + sparkle burst when `profile.xp` increases; level-up fires toast.
 
-### 4. Make login work perfectly
+## 4. Angel & Devil become upgradeable (XP + missions)
 
-Rewrite `/auth` and tighten the `AppShell` gate to fix the real bugs:
+Angel stays Kerim-only, Devil stays Amrudin-only, but they now have **3 tiers each** that get visibly cooler as the owner grinds:
 
-- **Signup without confirmation**: after `signUp`, check if a session was returned. If not, show a clear message ("Check your email to confirm your account, then sign in") and switch to sign-in mode instead of lying with "You're signed in."
-- **Race between auth listener and redirects**: use a single `onAuthStateChange` listener, don't manually navigate on submit. Add a proper `INITIAL_SESSION` handler so hard refreshes don't briefly bounce to `/auth`.
-- **AppShell gate**: keep `authState = "loading"` until the first `onAuthStateChange` event fires (which supabase-js always fires on subscribe with the initial session), so we never redirect based on a stale "no session" read.
-- **Clearer errors**: display Supabase's message inline under the form instead of only a toast, and translate the common ones ("Invalid login credentials" → "Wrong email or password", "Email not confirmed" → "Please confirm your email first — check your inbox").
-- **Forgot password**: add a "Forgot password?" link that calls `resetPasswordForEmail` with `redirectTo: <origin>/reset-password`, plus a new `/reset-password` public route that lets the user set a new password via `supabase.auth.updateUser`.
-- **Post sign-in destination**: land on `/` (Today) rather than `/battle`, so returning users see their study dashboard.
+Devil tiers (Amrudin):
+- **I — Imp**: current design.
+- **II — Fiend**: bigger horns, molten cracks glowing on skin, floating ember particles, tail flame.
+- **III — Archdemon**: massive spread wings with animated flame trails, crown of fire, pulsing hellfire aura, red lightning around feet.
 
-### Technical notes
+Angel tiers (Kerim):
+- **I — Cherub**: current.
+- **II — Seraph**: six wings (animated flap), rotating halo of runes, twin light orbs.
+- **III — Archangel**: radiant golden armor, huge feathered wings with aurora trail, holy sword, sunburst backdrop pulsing.
 
-- Database migration adds a `BEFORE INSERT OR UPDATE` trigger + function on `profiles` and `leaderboard_entries` to validate the `character.special` field against the allow-list. Uses `auth.email()` + display_name from the row.
-- Skins are pure canvas drawing in `Companion.tsx` — no new assets, no dependencies.
-- New file: `src/routes/reset-password.tsx` (public route).
-- Files touched: `src/routes/auth.tsx`, `src/components/study/AppShell.tsx`, `src/components/study/Companion.tsx`, `src/routes/character.tsx`, plus the new migration + `reset-password.tsx`.
+Upgrade requirements (checked in a new `character-progression.ts` selector, both must be true):
+- Tier II: Level 10 **and** mission "Win 5 battles" complete.
+- Tier III: Level 20 **and** mission "Score 74/74 on exam" **and** mission "Master 100 questions" complete.
+
+New "Owner missions" panel on `character.tsx` for Kerim/Amrudin only — shows current tier, next-tier missions with live progress bars. Auto-applies highest unlocked tier on load. Tier is derived, not stored, so it can't be spoofed; DB trigger just needs to know the special name (`angel` / `devil`) — actual tier is a client render decision keyed off the owner's real profile stats.
+
+## 5. Legendary forms remain Kerim/Amrudin exclusive — and much cooler
+
+Trigger already restricts `phoenix`/`void`/`titan` to those two emails. Add three more with the same restriction:
+
+- **Shadow Reaper** (`reaper`): obsidian hooded robe swaying, animated violet scythe trail, drifting smoke particles, red eye-glint pulse, cracked ground shadow.
+- **Celestial Oracle** (`oracle`): white/gold priestess robes, rotating halo of runes, twin star orbs orbiting on elliptical paths, aurora aura, floating spellbook.
+- **Cyber Samurai** (`samurai`): neon-cyan armor with animated circuit lines, holographic katana with scanline glow, glitching HUD reticle over one eye, hover-thrust ember trail.
+
+All rendered in `Companion.tsx` with SVG `<animate>` / `<animateTransform>` + CSS — no new deps. Character page's legendary grid becomes 6 cards (phoenix, void, titan, reaper, oracle, samurai) shown only when the current user is Kerim or Amrudin; hidden for everyone else. DB trigger extended to allow `reaper`/`oracle`/`samurai` for those two emails only.
+
+## 6. Battles that feel like actual battles
+
+`src/routes/battle.tsx` PlayingRoom:
+- **Arena view**: two players' `Companion`s face off across a dojo/arena background, big center vs., HP bars driven by remaining correct answers.
+- Snapshot character onto `battle_players.character` at join so opponents render your exact skin (no join needed).
+- **Attack FX**: correct answer → your companion lunges, slash + spark hits the opponent card; wrong → self shake + red flash.
+- **Live action feed**: "Kerim answered Q3 in 4.2s ✅" ticker from existing realtime `battle_answers`.
+- **Round header**: big "Round 3 / 8" + per-question timer ring.
+- **Victory screen**: winner's companion does a victory pose, confetti, XP breakdown.
+
+## 7. Analytics page overhaul (`src/routes/analytics.tsx`)
+
+Rebuild into a real dashboard:
+- **Header KPIs**: Level + XP-to-next progress, Accuracy (last 40), Mastery %, Current streak, Battles W/L.
+- **XP over time**: sparkline of daily XP earned last 30 days (from `sessions` + `examAttempts`).
+- **Accuracy trend**: line chart of rolling 20-answer accuracy over recent history.
+- **Topic mastery heatmap**: grid of all topics colored by strength (weak → strong), click to jump into Bank filtered.
+- **Confidence calibration**: bar chart — for each confidence level, actual accuracy vs. self-reported confidence (surfaces "dangerous overconfidence").
+- **Fastest & slowest topics**: median answer time per topic.
+- **Battle stats**: win rate, avg answer speed vs. opponents.
+- **Companion progress panel**: current stage + missions toward next tier (mirrors character.tsx for Kerim/Amrudin).
+
+Charts use `recharts` (already installed via shadcn's chart component). No new deps.
+
+## Technical notes
+
+- Level curve deterministic integer math.
+- Character sync: single upsert on `profiles`, keyed by `user_id`; local write is source of truth after hydrate, server is source on fresh sign-in.
+- Animations: pure CSS keyframes + SVG animate elements.
+- Tier gating for Angel/Devil is purely a render decision from the owner's own profile — cannot be spoofed to affect anyone else because the owner check itself is the constraint.
+- Battle FX: framer-motion not installed; use CSS + short-lived React state.
+- Migration: allow new legendary names in trigger, restrict them to the two emails (mirrors existing phoenix/void/titan clause), add `battle_players.character JSONB`.
+
+## Files touched
+
+- `src/lib/study/companion.ts` — new curve + stages
+- `src/lib/study/store.ts` — XP awards, streak bonus
+- `src/lib/study/types.ts` — SpecialCharacter union (+ reaper/oracle/samurai)
+- `src/lib/study/character-sync.ts` — new, cross-device sync
+- `src/lib/study/character-progression.ts` — new, derives Angel/Devil tier + mission progress
+- `src/routes/__root.tsx` — register sync
+- `src/components/study/Companion.tsx` — animations, 3 tiers of Angel/Devil, 3 new legendaries
+- `src/routes/index.tsx` — animated hero with selected skin
+- `src/routes/character.tsx` — owner missions panel, tier previews, 6 legendary cards (Kerim/Amrudin only)
+- `src/routes/battle.tsx` — arena UI, HP, feed, FX, victory
+- `src/routes/analytics.tsx` — full dashboard rewrite
+- `supabase/migrations/…` — trigger allow-list + battle_players.character
