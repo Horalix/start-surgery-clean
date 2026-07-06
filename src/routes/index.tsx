@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Play,
@@ -12,14 +12,15 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { useStore } from "@/lib/study/store";
-import { getState } from "@/lib/study/store";
+import { useStore, getState } from "@/lib/study/store";
 import { readiness, weakestTopics, topicStats } from "@/lib/study/selectors";
 import { levelProgress, stageForLevel, nextStage } from "@/lib/study/companion";
+import { withDerivedTier } from "@/lib/study/character-progression";
 import { Companion } from "@/components/study/Companion";
 import { StatCard, Ring, TopicBar } from "@/components/study/primitives";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({ component: Today });
 
@@ -30,10 +31,10 @@ const READY_META = {
 } as const;
 
 function Today() {
-  // subscribe to progress + profile so the dashboard recomputes live
   const tick = useStore((s) => s.profile.xp + Object.keys(s.progress).length);
   const name = useStore((s) => s.profile.name);
   const xp = useStore((s) => s.profile.xp);
+  const character = useStore((s) => s.character);
 
   const data = useMemo(() => {
     const s = getState();
@@ -41,17 +42,45 @@ function Today() {
       r: readiness(s),
       weak: weakestTopics(s, 4),
       stats: topicStats(s),
+      resolvedCharacter: withDerivedTier(s.character, s),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick]);
+  }, [tick, character]);
 
-  const { r, weak } = data;
+  const { r, weak, resolvedCharacter } = data;
   const lp = levelProgress(xp);
   const stage = stageForLevel(lp.level);
   const next = nextStage(lp.level);
   const ready = READY_META[r.state];
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+  // Level-up burst + toast
+  const prevLevelRef = useRef<number | null>(null);
+  const prevXpRef = useRef<number>(xp);
+  const [burst, setBurst] = useState(false);
+  const [xpPulse, setXpPulse] = useState(false);
+  useEffect(() => {
+    if (prevLevelRef.current == null) {
+      prevLevelRef.current = lp.level;
+      return;
+    }
+    if (lp.level > prevLevelRef.current) {
+      setBurst(true);
+      toast.success(`Level up! You reached Level ${lp.level} — ${stageForLevel(lp.level).name}.`);
+      setTimeout(() => setBurst(false), 950);
+    }
+    prevLevelRef.current = lp.level;
+  }, [lp.level]);
+
+  useEffect(() => {
+    if (xp > prevXpRef.current) {
+      setXpPulse(true);
+      setTimeout(() => setXpPulse(false), 520);
+    }
+    prevXpRef.current = xp;
+  }, [xp]);
+
 
   return (
     <div className="space-y-6">
