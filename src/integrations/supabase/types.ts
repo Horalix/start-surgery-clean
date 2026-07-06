@@ -101,6 +101,7 @@ export type Database = {
           host_user_id: string
           id: string
           mode: string
+          player_user_ids: string[]
           question_ids: string[]
           started_at: string | null
           status: string
@@ -112,6 +113,7 @@ export type Database = {
           host_user_id: string
           id?: string
           mode: string
+          player_user_ids?: string[]
           question_ids: string[]
           started_at?: string | null
           status?: string
@@ -123,6 +125,7 @@ export type Database = {
           host_user_id?: string
           id?: string
           mode?: string
+          player_user_ids?: string[]
           question_ids?: string[]
           started_at?: string | null
           status?: string
@@ -197,16 +200,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_battle_participant: {
-        Args: { _room_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_battle_room_waiting: { Args: { _room_id: string }; Returns: boolean }
-      is_battle_waiting: { Args: { _room_id: string }; Returns: boolean }
-      is_current_battle_participant: {
-        Args: { _room_id: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
