@@ -225,11 +225,14 @@ function Lobby({
         throw new Error(err.message || err.details || err.hint || "Room creation was blocked");
       }
       const room = data as { id: string };
+      const snapshotChar = withDerivedTier(character, getState()) ?? character ?? null;
       const { error: joinErr } = await db.from("battle_players").insert({
         room_id: room.id,
         user_id: userId,
         display_name: safeDisplayName(displayName),
+        character: snapshotChar as never,
       });
+
       if (joinErr) {
         console.error("[battle] host self-join failed:", joinErr);
         const err = joinErr as { message?: string; details?: string; hint?: string };
